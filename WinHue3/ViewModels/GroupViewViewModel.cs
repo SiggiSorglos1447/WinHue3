@@ -16,7 +16,7 @@ namespace WinHue3.ViewModels
     public class GroupViewViewModel : ValidatableBindableBase
     {
         private List<Group> _groups;
-        private List<Light> _lights;
+        private List<dynamic> _lights;
         private DataTable _dt;
         private string _filter;
         private bool _reverse;
@@ -26,7 +26,7 @@ namespace WinHue3.ViewModels
             _dt = new DataTable();
         }
 
-        public void Initialize(List<Group> groups, List<Light> lights)
+        public void Initialize(List<Group> groups, List<dynamic> lights)
         {
             _groups = groups;
             _lights = lights;
@@ -59,7 +59,7 @@ namespace WinHue3.ViewModels
         private void BuildGroupView()
         {
             List<Group> lgroups = _groups;
-            List<Light> llights = _lights;
+            List<dynamic> llights = _lights;
             if (lgroups == null) return;
             DataTable dt = new DataTable();
 
@@ -130,7 +130,7 @@ namespace WinHue3.ViewModels
         private void BuildGroupViewReverse()
         {
             List<Group> lgroups = _groups;
-            List<Light> llights = _lights;
+            List<dynamic> llights = _lights;
             if (lgroups == null) return;
             DataTable dt = new DataTable();
             dt.Columns.Add("Groups");

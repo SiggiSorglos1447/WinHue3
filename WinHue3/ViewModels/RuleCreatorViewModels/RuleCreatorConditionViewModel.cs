@@ -282,7 +282,7 @@ namespace WinHue3.ViewModels.RuleCreatorViewModels
             ListConditionProperties.Clear();
             SelectedConditionProperty = null;
             
-            switch (ObjectType)
+         /*   switch (ObjectType)
             {
                 case "lights":
                     CollectionExtensions.AddRange(ListConditionHueObjects, HueObjectHelper.GetBridgeLights(_bridge));
@@ -307,7 +307,7 @@ namespace WinHue3.ViewModels.RuleCreatorViewModels
                     break;
                 default:
                     break;
-            }
+            }*/
 
 
         }

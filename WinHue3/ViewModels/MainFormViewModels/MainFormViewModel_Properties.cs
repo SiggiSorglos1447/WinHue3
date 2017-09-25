@@ -31,7 +31,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
 
         public bool AppUpdateAvailable => UpdateManager.UpdateAvailable;
 
-        public ObservableCollection<IHueObject> ListBridgeObjects
+        public ObservableCollection<dynamic> ListBridgeObjects
         {
             get => _listBridgeObjects;
             set { SetProperty(ref _listBridgeObjects, value); RaisePropertyChanged("MultiBridgeCB");}

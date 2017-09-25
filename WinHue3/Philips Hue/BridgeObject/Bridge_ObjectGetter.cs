@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using WinHue3.ExtensionMethods;
 using WinHue3.Philips_Hue.BridgeObject.BridgeMessages;
 using WinHue3.Philips_Hue.Communication;
@@ -9,8 +12,11 @@ using WinHue3.Philips_Hue.HueObjects.Common;
 
 namespace WinHue3.Philips_Hue.BridgeObject
 {
+    
+
     public partial class Bridge
     {
+        private ExpandoObjectConverter eoc = new ExpandoObjectConverter();
 
         /// <summary>
         /// Get the specified object freom the bridge in async.
@@ -93,17 +99,16 @@ namespace WinHue3.Philips_Hue.BridgeObject
         /// <typeparam name="T">Type of object to deserialize to</typeparam>
         /// <param name="id">Id of the object to get</param>
         /// <returns>BridgeCommResult</returns>
-        public async Task<IHueObject> GetObjectAsyncTask(string id, Type objecttype)
+        public async Task<dynamic> GetObjectAsyncTask(string id, HueObjectType type)
         {
 
-            string typename = objecttype.GetHueType();
-            if (typename == null) return null;
+            string typename = type.ToString();
             string url = BridgeUrl + $"/{typename}/{id}";
             CommResult comres = await Comm.SendRequestAsyncTask(new Uri(url), WebRequestType.GET);
 
             if (comres.Status == WebExceptionStatus.Success)
             {
-                IHueObject data = (IHueObject)Serializer.DeserializeToObject(comres.Data, objecttype);
+                dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(comres.Data, eoc );
                 if (data != null) return data;
                 LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(comres.Data));
                 return null;
@@ -161,20 +166,20 @@ namespace WinHue3.Philips_Hue.BridgeObject
         }
 
         /// <summary>
-        /// Get a list of specified objects from the bridge async.
+        /// Get a list of specified objects from the bridge.
         /// </summary>
         /// <typeparam name="T">HueObject (Light,Group,Sensor,Rule,Schedule,Scene)</typeparam>
         /// <returns>BridgeCommResult</returns>
-        public async Task<Dictionary<string, T>> GetListObjectsAsyncTask<T>() where T : IHueObject
+        public Dictionary<string, ExpandoObject> GetListObjects(HueObjectType objtype)
         {
 
-            string typename = typeof(T).GetHueType();
-            string url = BridgeUrl + $"/{typename}";
-            CommResult comres = await Comm.SendRequestAsyncTask(new Uri(url), WebRequestType.GET);
+
+            string url = BridgeUrl + $"/{objtype.ToString()}";
+            CommResult comres = Comm.SendRequest(new Uri(url), WebRequestType.GET);
 
             if (comres.Status == WebExceptionStatus.Success)
             {
-                Dictionary<string, T> data = Serializer.DeserializeToObject<Dictionary<string, T>>(comres.Data);
+                Dictionary<string, ExpandoObject> data = JsonConvert.DeserializeObject<Dictionary<string, ExpandoObject>>(comres.Data, eoc);
                 if (data != null) return data;
                 LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(comres.Data));
                 return null;
@@ -182,6 +187,30 @@ namespace WinHue3.Philips_Hue.BridgeObject
             ProcessCommandFailure(url, comres.Status);
             return null;
         }
+
+        /// <summary>
+        /// Get a list of specified objects from the bridge async.
+        /// </summary>
+        /// <typeparam name="T">HueObject (Light,Group,Sensor,Rule,Schedule,Scene)</typeparam>
+        /// <returns>BridgeCommResult</returns>
+        public async Task<Dictionary<string, ExpandoObject>> GetListObjectsAsyncTask(HueObjectType type)
+        {
+
+            string typename = type.ToString();
+            string url = BridgeUrl + $"/{typename}";
+            CommResult comres = await Comm.SendRequestAsyncTask(new Uri(url), WebRequestType.GET);
+
+            if (comres.Status == WebExceptionStatus.Success)
+            {
+                Dictionary<string, ExpandoObject> data = JsonConvert.DeserializeObject<Dictionary<string, ExpandoObject>>(comres.Data, new ExpandoObjectConverter());
+                if (data != null) return data;
+                LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(comres.Data));
+                return null;
+            }
+            ProcessCommandFailure(url, comres.Status);
+            return null;
+        }
+
 
         /// <summary>
         /// Get the newly detected lights or sensors. This will not work on other HueObject Types.

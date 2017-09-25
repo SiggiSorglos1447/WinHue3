@@ -21,7 +21,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
     public partial class MainFormViewModel : ValidatableBindableBase
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private ObservableCollection<IHueObject> _listBridgeObjects;
+        private ObservableCollection<dynamic> _listBridgeObjects;
         private readonly DispatcherTimer _findlighttimer = new DispatcherTimer();
         private readonly DispatcherTimer _findsensortimer = new DispatcherTimer();
         private readonly List<HotKeyHandle> _lhk;
@@ -42,7 +42,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             _hotkeyDetected = false;
             _ledTimer.Tick += _ledTimer_Tick;
             _lhk = new List<HotKeyHandle>();
-            _listBridgeObjects = new ObservableCollection<IHueObject>();
+            _listBridgeObjects = new ObservableCollection<dynamic>();
             _listBridges = new ObservableCollection<Bridge>();
             _findlighttimer.Interval = new TimeSpan(0, 1, 0);
             _findlighttimer.Tick += _findlighttimer_Tick;

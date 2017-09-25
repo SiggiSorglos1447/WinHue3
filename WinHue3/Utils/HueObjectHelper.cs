@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using System.Windows.Media;
 using log4net;
 using WinHue3.ExtensionMethods;
 using WinHue3.Interface;
+using WinHue3.Philips_Hue;
 using WinHue3.Philips_Hue.BridgeObject;
 using WinHue3.Philips_Hue.BridgeObject.BridgeMessages;
 using WinHue3.Philips_Hue.BridgeObject.BridgeObjects;
@@ -40,22 +42,22 @@ namespace WinHue3.Utils
         {
             LightImageLibrary.LoadLightsImages();
         }
-
+/*
         /// <summary>
         /// Get a list of light with ID, name and image populated from the selected bridge.
         /// </summary>
         /// <param name="bridge">Bridge to get the lights from.</param>
         /// <returns>A List fo lights.</returns>
-        public static List<Light> GetBridgeLights(Bridge bridge)
+        public static List<dynamic> GetBridgeLights(Bridge bridge)
         {
             log.Debug($@"Getting all lights from bridge : {bridge.IpAddress}");
-            Dictionary<string,Light> bresult = bridge?.GetListObjects<Light>();
+            Dictionary<string,dynamic> bresult = bridge?.GetListObjects(HueObjectType.lights);
             if (bresult == null) return null;
             log.Debug("List lights : " + Serializer.SerializeToJson(bresult));
             return ProcessLights(bresult);
         }
-
-
+        */
+/*
         /// <summary>
         /// Get a list of light with ID, name and image populated from the selected bridge.
         /// </summary>
@@ -68,6 +70,20 @@ namespace WinHue3.Utils
             if (bresult == null) return null;
             log.Debug("List lights : " + Serializer.SerializeToJson(bresult));
             return ProcessLights(bresult);
+        }*/
+
+        /// <summary>
+        /// Get a list of light with ID, name and image populated from the selected bridge.
+        /// </summary>
+        /// <param name="bridge">Bridge to get the lights from.</param>
+        /// <returns>A List fo lights.</returns>
+        public static async Task<List<dynamic>> GetBridgeLightsAsyncTask(Bridge bridge)
+        {
+            log.Debug($@"Getting all lights from bridge : {bridge.IpAddress}");
+            Dictionary<string, ExpandoObject> bresult = await bridge?.GetListObjectsAsyncTask(HueObjectType.lights);
+            if (bresult == null) return null;
+            log.Debug("List lights : " + Serializer.SerializeToJson(bresult));
+            return ProcessLights(bresult);
         }
 
         /// <summary>
@@ -75,7 +91,7 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the new lights from.</param>
         /// <returns>A list of lights.</returns>
-        public static async Task<List<IHueObject>> GetBridgeNewLightsAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeNewLightsAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting new lights from bridge {bridge.IpAddress}");
             SearchResult bresult = await bridge?.GetNewObjectsAsyncTask<Light>();
@@ -106,15 +122,35 @@ namespace WinHue3.Utils
         }
 
         /// <summary>
+        /// Process the list of lights
+        /// </summary>
+        /// <param name="listlights">List of lights to process.</param>
+        /// <returns>A list of processed lights.</returns>
+        private static List<dynamic> ProcessLights(Dictionary<string, ExpandoObject> listlights)
+        {
+            List<dynamic> newlist = new List<dynamic>();
+
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listlights)
+            {
+                dynamic curr = kvp.Value;
+                curr.Id = kvp.Key;
+                curr.Image = GetImageForLight(curr.state.reachable ? curr.state.on ? LightImageState.On : LightImageState.Off : LightImageState.Unr, curr.modelid);
+                newlist.Add(curr);
+            }
+
+            return newlist;
+        }
+
+        /// <summary>
         /// Process the search results.
         /// </summary>
         /// <param name="bridge">Bridge to process the search results from</param>
         /// <param name="results">Search result to process</param>
         /// <param name="type">Type of result to process. Lights or Sensors</param>
         /// <returns>A list of objects.</returns>
-        private static List<IHueObject> ProcessSearchResult(Bridge bridge, SearchResult results,bool type)
+        private static List<dynamic> ProcessSearchResult(Bridge bridge, SearchResult results,bool type)
         {
-            List<IHueObject> newlist = new List<IHueObject>();
+            List<dynamic> newlist = new List<dynamic>();
             if (type) // lights
             {
                 foreach (KeyValuePair<string, string> kvp in results.listnewobjects)
@@ -163,18 +199,18 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the groups from.</param>
         /// <returns>A List of Group.</returns>
-        public static List<Group> GetBridgeGroups(Bridge bridge)
+        public static List<dynamic> GetBridgeGroups(Bridge bridge)
         {
             log.Debug($@"Getting all groups from bridge {bridge.IpAddress}");
-            Dictionary<string, Group> bresult = bridge.GetListObjects<Group>();
+            Dictionary<string, ExpandoObject> bresult = bridge.GetListObjects(HueObjectType.groups);
             if (bresult == null) return null;
-            Dictionary<string, Group> gs = bresult;
-            Group zero = GetGroupZero(bridge);
+            Dictionary<string, ExpandoObject> gs = bresult;
+            dynamic zero = GetGroupZero(bridge);
             if (zero != null)
             {
                 gs.Add("0", zero);
             }
-            List<Group> hr = ProcessGroups(gs);
+            List<dynamic> hr = ProcessGroups(gs);
             log.Debug("List groups : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -184,18 +220,18 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the groups from.</param>
         /// <returns>A List of Group.</returns>
-        public static async Task<List<Group>> GetBridgeGroupsAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeGroupsAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting all groups from bridge {bridge.IpAddress}");
-            Dictionary<string, Group> bresult = await bridge.GetListObjectsAsyncTask<Group>();
+            Dictionary<string, ExpandoObject> bresult = await bridge.GetListObjectsAsyncTask(HueObjectType.groups);
             if (bresult == null) return null;
-            Dictionary<string, Group> gs = bresult;
-            Group zero = await GetGroupZeroAsynTask(bridge);
+            Dictionary<string, ExpandoObject> gs = bresult;
+            dynamic zero = await GetGroupZeroAsynTask(bridge);
             if (zero != null)
             {
                 gs.Add("0", zero);
             }
-            List<Group> hr = ProcessGroups(gs);
+            List<dynamic> hr = ProcessGroups(gs);
             log.Debug("List groups : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -205,14 +241,15 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listgroups">List of group t</param>
         /// <returns>A list of processed group with image and id.</returns>
-        private static List<Group> ProcessGroups(Dictionary<string, Group> listgroups)
+        private static List<dynamic> ProcessGroups(Dictionary<string, ExpandoObject> listgroups)
         {
-            List<Group> newlist = new List<Group>();
-            foreach (KeyValuePair<string, Group> kvp in listgroups)
+            List<dynamic> newlist = new List<dynamic>();
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listgroups)
             {
                 log.Debug("Processing group : " + kvp.Value);
-                kvp.Value.Id = kvp.Key;
-                kvp.Value.Image = GDIManager.CreateImageSourceFromImage(kvp.Value.state.any_on.GetValueOrDefault() ? (kvp.Value.state.all_on.GetValueOrDefault() ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupSome_Large) : Properties.Resources.HueGroupOff_Large);
+                dynamic curr = kvp.Value;
+                curr.Id = kvp.Key;
+                curr.Image = GDIManager.CreateImageSourceFromImage(curr.state.any_on.GetValueOrDefault() ? (curr.state.all_on.GetValueOrDefault() ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupSome_Large) : Properties.Resources.HueGroupOff_Large);
                 newlist.Add(kvp.Value);
             }
 
@@ -225,12 +262,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the scenes from.</param>
         /// <returns>A List of scenes.</returns>
-        public static List<Scene> GetBridgeScenes(Bridge bridge)
+        public static List<dynamic> GetBridgeScenes(Bridge bridge)
         {
             log.Debug($@"Getting all scenes from bridge {bridge.IpAddress}");
-            Dictionary<string, Scene> bresult = bridge.GetListObjects<Scene>();
+            Dictionary<string, ExpandoObject> bresult = bridge.GetListObjects(HueObjectType.scenes);
             if (bresult == null) return null;
-            List<Scene> hr = ProcessScenes(bresult);
+            List<dynamic> hr = ProcessScenes(bresult);
             log.Debug("List Scenes : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -240,12 +277,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the scenes from.</param>
         /// <returns>A List of scenes.</returns>
-        public static async Task<List<Scene>> GetBridgeScenesAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeScenesAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting all scenes from bridge {bridge.IpAddress}");
-            Dictionary<string, Scene> bresult = await bridge.GetListObjectsAsyncTask<Scene>();
+            Dictionary<string, ExpandoObject> bresult = await bridge.GetListObjectsAsyncTask(HueObjectType.scenes);
             if (bresult == null) return null;
-            List<Scene> hr = ProcessScenes(bresult);
+            List<dynamic> hr = ProcessScenes(bresult);
             log.Debug("List Scenes : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -255,17 +292,18 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listscenes">List of scenes to process.</param>
         /// <returns>A list of processed scenes.</returns>
-        private static List<Scene> ProcessScenes(Dictionary<string, Scene> listscenes)
+        private static List<dynamic> ProcessScenes(Dictionary<string, ExpandoObject> listscenes)
         {
-            List<Scene> newlist = new List<Scene>();
+            List<dynamic> newlist = new List<dynamic>();
 
-            foreach (KeyValuePair<string, Scene> kvp in listscenes)
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listscenes)
             {
-                kvp.Value.Id = kvp.Key;
+                dynamic curr = kvp.Value;
+                curr.Id = kvp.Key;
                 log.Debug("Processing scene : " + kvp.Value);
-                kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.SceneLarge);
-                if (kvp.Value.name.Contains("HIDDEN") && !WinHueSettings.settings.ShowHiddenScenes) continue;
-                newlist.Add(kvp.Value);
+                curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.SceneLarge);
+                if (curr.name.Contains("HIDDEN") && !WinHueSettings.settings.ShowHiddenScenes) continue;
+                newlist.Add(curr);
             }
 
             return newlist;
@@ -276,12 +314,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the schedules from.</param>
         /// <returns>A List of schedules.</returns>
-        public static List<Schedule> GetBridgeSchedules(Bridge bridge)
+        public static List<dynamic> GetBridgeSchedules(Bridge bridge)
         {
             log.Debug($@"Getting all schedules from bridge {bridge.IpAddress}");
-            Dictionary<string, Schedule> bresult =bridge.GetListObjects<Schedule>();
+            Dictionary<string, ExpandoObject> bresult = bridge.GetListObjects(HueObjectType.schedules);
             if (bresult == null) return null;
-            List<Schedule> hr = ProcessSchedules(bresult);
+            List<dynamic> hr = ProcessSchedules(bresult);
             log.Debug("List Schedules : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -291,12 +329,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the schedules from.</param>
         /// <returns>A List of schedules.</returns>
-        public static async Task<List<Schedule>> GetBridgeSchedulesAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeSchedulesAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting all schedules from bridge {bridge.IpAddress}");
-            Dictionary<string, Schedule> bresult = await bridge.GetListObjectsAsyncTask<Schedule>();
+            Dictionary<string, ExpandoObject> bresult = await bridge.GetListObjectsAsyncTask(HueObjectType.schedules);
             if (bresult == null) return null;
-            List<Schedule> hr = ProcessSchedules(bresult);
+            List<dynamic> hr = ProcessSchedules(bresult);
             log.Debug("List Schedules : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -306,27 +344,28 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listschedules">List of schedules to process.</param>
         /// <returns>A list of processed schedules.</returns>
-        public static List<Schedule> ProcessSchedules(Dictionary<string, Schedule> listschedules)
+        public static List<dynamic> ProcessSchedules(Dictionary<string, ExpandoObject> listschedules)
         {
-            List<Schedule> newlist = new List<Schedule>();
+            List<dynamic> newlist = new List<dynamic>();
 
-            foreach (KeyValuePair<string, Schedule> kvp in listschedules)
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listschedules)
             {
                 log.Debug("Assigning id to schedule ");
-                kvp.Value.Id = kvp.Key;
+                dynamic curr = kvp.Value;
+                curr.Id = kvp.Key;
                 ImageSource imgsource;
                 log.Debug("Processing schedule : " + kvp.Value);
                 string Time = string.Empty;
-                if (kvp.Value.localtime == null)
+                if (curr.localtime == null)
                 {
                     log.Debug("LocalTime does not exists try to use Time instead.");
-                    if (kvp.Value.localtime == null) continue;
-                    Time = kvp.Value.localtime;
+                    if (curr.localtime == null) continue;
+                    Time = curr.localtime;
                 }
                 else
                 {
                     log.Debug("Using LocalTime as schedule time.");
-                    Time = kvp.Value.localtime;
+                    Time = curr.localtime;
                 }
 
                 if (Time.Contains("PT"))
@@ -350,7 +389,7 @@ namespace WinHue3.Utils
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.schedules);
                 }
 
-                kvp.Value.Image = imgsource;
+                curr.Image = imgsource;
                 newlist.Add(kvp.Value);
             }
 
@@ -363,12 +402,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the rules from.</param>
         /// <returns>A List of rules.</returns>
-        public static List<Rule> GetBridgeRules(Bridge bridge)
+        public static List<dynamic> GetBridgeRules(Bridge bridge)
         {
             log.Debug($@"Getting all rules from bridge {bridge.IpAddress}");
-            Dictionary<string,Rule> bresult = bridge.GetListObjects<Rule>();
+            Dictionary<string,ExpandoObject> bresult = bridge.GetListObjects(HueObjectType.rules);
             if (bresult == null) return null;
-            List<Rule> hr = ProcessRules(bresult);
+            List<dynamic> hr = ProcessRules(bresult);
             log.Debug("List Rules : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -378,12 +417,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the rules from.</param>
         /// <returns>A List of rules.</returns>
-        public static async Task<List<Rule>> GetBridgeRulesAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeRulesAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting all rules from bridge {bridge.IpAddress}");
-            Dictionary<string, Rule> bresult = await bridge.GetListObjectsAsyncTask<Rule>();
+            Dictionary<string, ExpandoObject> bresult = await bridge.GetListObjectsAsyncTask(HueObjectType.rules);
             if (bresult == null) return null;
-            List<Rule> hr = ProcessRules(bresult);
+            List<dynamic> hr = ProcessRules(bresult);
             log.Debug("List Rules : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -393,16 +432,17 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listrules">List of rules to process.</param>
         /// <returns>A processed list of rules.</returns>
-        private static List<Rule> ProcessRules(Dictionary<string, Rule> listrules)
+        private static List<dynamic> ProcessRules(Dictionary<string, ExpandoObject> listrules)
         {
-            List<Rule> newlist = new List<Rule>();
+            List<dynamic> newlist = new List<dynamic>();
 
-            foreach (KeyValuePair<string, Rule> kvp in listrules)
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listrules)
             {
-                kvp.Value.Id = kvp.Key;
+                dynamic curr = kvp.Value;
+                curr.Id = kvp.Key;
                 log.Debug("Processing rule : " + kvp.Value);
-                kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.rules);
-                newlist.Add(kvp.Value);
+                curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.rules);
+                newlist.Add(curr);
             }
 
             return newlist;
@@ -413,12 +453,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the sensors from.</param>
         /// <returns>A List of sensors.</returns>
-        public static List<Sensor> GetBridgeSensors(Bridge bridge)
+        public static List<dynamic> GetBridgeSensors(Bridge bridge)
         {
             log.Debug($@"Getting all sensors from bridge {bridge.IpAddress}");
-            Dictionary<string,Sensor> bresult = bridge.GetListObjects<Sensor>();
+            Dictionary<string,ExpandoObject> bresult = bridge.GetListObjects(HueObjectType.sensors);
             if (bresult == null) return null;
-            List<Sensor> hr = ProcessSensors(bresult);
+            List<dynamic> hr = ProcessSensors(bresult);
             log.Debug("List Sensors : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -428,12 +468,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the sensors from.</param>
         /// <returns>A List of sensors.</returns>
-        public static async Task<List<Sensor>> GetBridgeSensorsAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeSensorsAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting all sensors from bridge {bridge.IpAddress}");
-            Dictionary<string, Sensor> bresult = await bridge.GetListObjectsAsyncTask<Sensor>();
+            Dictionary<string, ExpandoObject> bresult = await bridge.GetListObjectsAsyncTask(HueObjectType.sensors);
             if (bresult == null) return null;
-            List<Sensor> hr = ProcessSensors(bresult);
+            List<dynamic> hr = ProcessSensors(bresult);
             log.Debug("List Sensors : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -443,11 +483,11 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the sensors from.</param>
         /// <returns>A List of sensors.</returns>
-        public static List<IHueObject> GetBridgeNewSensors(Bridge bridge)
+        public static List<dynamic> GetBridgeNewSensors(Bridge bridge)
         {
             log.Debug($@"Getting new sensors from bridge : {bridge.IpAddress}");
             SearchResult bresult = bridge.GetNewObjects<Sensor>();
-            List<IHueObject> hr = ProcessSearchResult(bridge, bresult, false);
+            List<dynamic> hr = ProcessSearchResult(bridge, bresult, false);
             log.Debug("Search Result : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -457,11 +497,11 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the sensors from.</param>
         /// <returns>A List of sensors.</returns>
-        public static async Task<List<IHueObject>> GetBridgeNewSensorsAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeNewSensorsAsyncTask(Bridge bridge)
         {
             log.Debug($@"Getting new sensors from bridge : {bridge.IpAddress}");
             SearchResult bresult = await bridge.GetNewObjectsAsyncTask<Sensor>();
-            List<IHueObject> hr = ProcessSearchResult(bridge, bresult, false);
+            List<dynamic> hr = ProcessSearchResult(bridge, bresult, false);
             log.Debug("Search Result : " + Serializer.SerializeToJson(hr));
             return hr;
         }
@@ -471,31 +511,33 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listsensors">List of sensors to process.</param>
         /// <returns>A list of processed sensors.</returns>
-        private static List<Sensor> ProcessSensors(Dictionary<string, Sensor> listsensors)
+        private static List<dynamic> ProcessSensors(Dictionary<string, ExpandoObject> listsensors)
         {
-            List<Sensor> newlist = new List<Sensor>();
+            List<dynamic> newlist = new List<dynamic>();
 
-            foreach (KeyValuePair<string, Sensor> kvp in listsensors)
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listsensors)
             {
-                kvp.Value.Id = kvp.Key;
+                dynamic curr = kvp.Value;
+                curr.huetype = HueObjectType.sensors;
+                curr.Id = kvp.Key;
                 log.Debug("Processing Sensor : " + kvp.Value);
-                switch (kvp.Value.type)
+                switch (curr.type)
                 {
                     case "ZGPSwitch":
                         log.Debug("Sensor is Hue Tap.");
-                        kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.huetap);
+                        curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.huetap);
                         break;
                     case "ZLLSwitch":
                         log.Debug("Sensor is dimmer.");
-                        kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.dimmer);
+                        curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.dimmer);
                         break;
                     case "ZLLPresence":
                         log.Debug("Sensor is Motion.");
-                        kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.Motion);
+                        curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.Motion);
                         break;
                     default:
                         log.Debug("Sensor is generic sensor.");
-                        kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.sensor);
+                        curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.sensor);
                         break;
 
                 }
@@ -510,12 +552,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the resource links from.</param>
         /// <returns>A list of resource links.</returns>
-        public static List<Resourcelink> GetBridgeResourceLinks(Bridge bridge)
+        public static List<dynamic> GetBridgeResourceLinks(Bridge bridge)
         {
             log.Info($@"Fetching Resource links from bridge : {bridge.IpAddress}");
-            Dictionary<string, Resourcelink> bresult = bridge.GetListObjects<Resourcelink>();
+            Dictionary<string, ExpandoObject> bresult = bridge.GetListObjects(HueObjectType.resourcelinks);
             if (bresult == null) return null;
-            List<Resourcelink> rl =  ProcessRessourceLinks(bresult);
+            List<dynamic> rl =  ProcessRessourceLinks(bresult);
             return rl;
         }
 
@@ -524,12 +566,12 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the resource links from.</param>
         /// <returns>A list of resource links.</returns>
-        public static async Task<List<Resourcelink>> GetBridgeResourceLinksAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeResourceLinksAsyncTask(Bridge bridge)
         {
             log.Info($@"Fetching Resource links from bridge : {bridge.IpAddress}");
-            Dictionary<string, Resourcelink> bresult = await bridge.GetListObjectsAsyncTask<Resourcelink>();
+            Dictionary<string, ExpandoObject> bresult = await bridge.GetListObjectsAsyncTask(HueObjectType.resourcelinks);
             if (bresult == null) return null;
-            List<Resourcelink> rl = ProcessRessourceLinks(bresult);
+            List<dynamic> rl = ProcessRessourceLinks(bresult);
             return rl;
         }
 
@@ -538,11 +580,11 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the datastore from.</param>
         /// <returns>A List of objects.</returns>
-        public static List<IHueObject> GetBridgeDataStore(Bridge bridge)
+        public static List<dynamic> GetBridgeDataStore(Bridge bridge)
         {
             log.Info($@"Fetching DataStore from bridge : {bridge.IpAddress}");
             DataStore bresult = bridge.GetBridgeDataStore();
-            List<IHueObject> hr = null;
+            List<dynamic> hr = null;
             if (bresult == null) return hr;
             DataStore ds = bresult;
             Group zero = GetGroupZero(bridge);
@@ -562,11 +604,11 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge">Bridge to get the datastore from.</param>
         /// <returns>a list of IHueObject</returns>
-        public static async Task<List<IHueObject>> GetBridgeDataStoreAsyncTask(Bridge bridge)
+        public static async Task<List<dynamic>> GetBridgeDataStoreAsyncTask(Bridge bridge)
         {
             log.Info($@"Fetching DataStore from bridge : {bridge.IpAddress}");
             DataStore bresult = await bridge.GetBridgeDataStoreAsyncTask();
-            List<IHueObject> hr = null;
+            List<dynamic> hr = null;
             if (bresult == null) return hr;
             DataStore ds = bresult;
             Group zero = await GetGroupZeroAsynTask(bridge);
@@ -596,9 +638,9 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge"></param>
         /// <returns></returns>
-        private static async Task<Group> GetGroupZeroAsynTask(Bridge bridge)
+        private static async Task<dynamic> GetGroupZeroAsynTask(Bridge bridge)
         {
-            return (Group)await bridge.GetObjectAsyncTask("0", typeof(Group));
+            return (dynamic)await bridge.GetObjectAsyncTask("0", HueObjectType.groups);
         }
 
         /// <summary>
@@ -606,9 +648,9 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="datastore">Datastore to process.</param>
         /// <returns>A list of object processed.</returns>
-        private static List<IHueObject> ProcessDataStore(DataStore datastore)
+        private static List<dynamic> ProcessDataStore(dynamic datastore)
         {
-            List<IHueObject> newlist = new List<IHueObject>();
+            List<dynamic> newlist = new List<dynamic>();
             log.Debug("Processing datastore...");
             newlist.AddRange(ProcessLights(datastore.lights));
             newlist.AddRange(ProcessGroups(datastore.groups));
@@ -621,16 +663,18 @@ namespace WinHue3.Utils
             return newlist;
         }
 
-        private static List<Resourcelink> ProcessRessourceLinks(Dictionary<string, Resourcelink> listrl)
+        private static List<dynamic> ProcessRessourceLinks(Dictionary<string, ExpandoObject> listrl)
         {
-            if(listrl == null) return new List<Resourcelink>();
-            List<Resourcelink> newlist = new List<Resourcelink>();
+            if(listrl == null) return new List<dynamic>();
+            List<dynamic> newlist = new List<dynamic>();
 
-            foreach (KeyValuePair<string, Resourcelink> kvp in listrl)
+            foreach (KeyValuePair<string, ExpandoObject> kvp in listrl)
             {
-                kvp.Value.Id = kvp.Key;
+                dynamic curr = kvp.Value;
+                curr.huetype = HueObjectType.resourcelinks;
+                curr.Id = kvp.Key;
                 log.Debug("Processing resource links : " + kvp.Value);
-                kvp.Value.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.resource);
+                curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.resource);
                 newlist.Add(kvp.Value);
             }
             return newlist;
@@ -757,29 +801,28 @@ namespace WinHue3.Utils
         /// <param name="obj">Object to toggle.</param>
         /// <param name="tt">Transition Time (Optional)</param>
         /// <returns>The new image of the object.</returns>
-        public static async Task<ImageSource> ToggleObjectOnOffStateAsyncTask(Bridge bridge, IHueObject obj, ushort? tt = null)
+        public static async Task<ImageSource> ToggleObjectOnOffStateAsyncTask(Bridge bridge, dynamic obj, ushort? tt = null)
         {
             ImageSource hr = null;
-            if (obj is Light)
+            if (obj.huetype == HueObjectType.lights)
             {
-                Light bresult = await bridge.GetObjectAsyncTask<Light>(obj.Id);
+                dynamic bresult = await bridge.GetObjectAsyncTask(obj.Id, HueObjectType.lights);
                 if (bresult == null) return null;
-                Light currentState = bresult;
-
-                if (currentState.state.reachable == false)
+                
+                if (bresult.state.reachable == false)
                 {
-                    hr = GetImageForLight(LightImageState.Unr, currentState.modelid);
+                    hr = GetImageForLight(LightImageState.Unr, bresult.modelid);
                 }
                 else
                 {
-                    if (currentState.state.@on == true)
+                    if (bresult.state.@on == true)
                     {
                         log.Debug("Toggling light state : OFF");
                         bool bsetlightstate = await bridge.SetStateAsyncTask(new State { @on = false, transitiontime = tt }, obj.Id);
 
                         if (bsetlightstate)
                         {
-                            hr = GetImageForLight(LightImageState.Off, currentState.modelid);
+                            hr = GetImageForLight(LightImageState.Off, bresult.modelid);
                         }
 
                     }
@@ -791,7 +834,7 @@ namespace WinHue3.Utils
                         if (bsetlightstate)
                         {
 
-                            hr = GetImageForLight(LightImageState.On, currentState.modelid);
+                            hr = GetImageForLight(LightImageState.On, bresult.modelid);
                         }
 
                     }
@@ -800,11 +843,11 @@ namespace WinHue3.Utils
             }
             else
             {
-                Group bresult = await bridge.GetObjectAsyncTask<Group>(obj.Id);
+                dynamic bresult = await bridge.GetObjectAsyncTask(obj.Id, HueObjectType.groups);
 
                 if (bresult == null) return null;
-                Group currentstate = bresult;
-                if (currentstate.action.@on == true)
+                
+                if (bresult.action.@on == true)
                 {
                     log.Debug("Toggling group state : ON");
                     bool bsetgroupstate = await bridge.SetStateAsyncTask(new Action { @on = false, transitiontime = tt }, obj.Id);
@@ -907,51 +950,6 @@ namespace WinHue3.Utils
             return newImage;
         }
 
-        public static List<T> GetObjectsList<T>(Bridge bridge) where T : IHueObject
-        {           
-            
-            List<T> hr = new List<T>();
-
-            if (typeof(T) == typeof(Light))
-            {
-                Dictionary<string, Light> res = bridge.GetListObjects<Light>();
-                if (res != null)
-                    hr = ProcessLights(res) as List<T>;
-            }
-            else if(typeof(T) == typeof(Group))
-            {
-                Dictionary<string, Group> res = bridge.GetListObjects<Group>();
-                if (res != null)
-                    hr = ProcessGroups(res) as List<T>;
-            }
-            else if (typeof(T) == typeof(Scene))
-            {
-                Dictionary<string, Scene> res = bridge.GetListObjects<Scene>();
-                if(res != null)
-                    hr = ProcessScenes(res) as List<T>;
-            }
-            else if(typeof(T) == typeof(Schedule))
-            {
-                Dictionary<string, Schedule> res = bridge.GetListObjects<Schedule>();
-                if (res != null)
-                    hr = ProcessSchedules(res) as List<T>;
-            }
-            else if (typeof(T) == typeof(Sensor))
-            {
-                Dictionary<string, Sensor> res = bridge.GetListObjects<Sensor>();
-                if (res != null)
-                    hr = ProcessSensors(res) as List<T>;
-
-            }
-            else if (typeof(T) == typeof(Resourcelink))
-            {
-                Dictionary<string, Resourcelink> res = bridge.GetListObjects<Resourcelink>();
-                if (res != null)
-                    hr = ProcessRessourceLinks(res) as List<T>;
-            }
-
-            return hr;
-        }
 
         /// <summary>
         /// Get a specific object from the bridge.
@@ -1058,72 +1056,75 @@ namespace WinHue3.Utils
         /// <param name="id">The id of the object</param>
         /// <param name="objecttype">the type of the object to get.</param>
         /// <returns>the object requested.</returns>
-        public static async Task<IHueObject> GetObjectAsyncTask(Bridge bridge, string id, Type objecttype) 
+        public static async Task<dynamic> GetObjectAsyncTask(Bridge bridge, string id, HueObjectType objecttype) 
         {
-            IHueObject bresult = await bridge.GetObjectAsyncTask(id,objecttype);
-            IHueObject Object = bresult;
-            if (Object == null) return null;
-            Object.Id = id;
+            dynamic bresult = await bridge.GetObjectAsyncTask(id,objecttype);
 
-
-            if (bresult == null) return Object;
-            if (objecttype == typeof(Light))
+            if (bresult == null) return null;
+            bresult.Id = id;
+            
+            if (objecttype == HueObjectType.lights)
             {
-                Light light = Object as Light;
-
-                log.Debug("Light : " + Object);
-                light.Id = id;
-                light.Image =
+               
+                log.Debug("Light : " + bresult);
+                bresult.Id = id;
+                bresult.huetype = HueObjectType.lights;
+                bresult.Image =
                     GetImageForLight(
-                        light.state.reachable.GetValueOrDefault()
-                            ? light.state.@on.GetValueOrDefault() ? LightImageState.On : LightImageState.Off
-                            : LightImageState.Unr, light.modelid);
-                Object = light;
+                        bresult.state.reachable.GetValueOrDefault()
+                            ? bresult.state.@on.GetValueOrDefault() ? LightImageState.On : LightImageState.Off
+                            : LightImageState.Unr, bresult.modelid);
+                
             }
-            else if (objecttype == typeof(Group))
+            else if (objecttype == HueObjectType.groups)
             {
-                Group group = Object as Group;
-                log.Debug("Group : " + @group);
-                @group.Id = id;
-                @group.Image = GDIManager.CreateImageSourceFromImage(@group.action.@on.GetValueOrDefault() ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupOff_Large);
-                Object = @group;
+                
+                bresult.huetype = HueObjectType.groups;
+                log.Debug("Group : " + bresult);
+                bresult.Id = id;
+                bresult.Image = GDIManager.CreateImageSourceFromImage(bresult.action.@on.GetValueOrDefault() ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupOff_Large);
+                
             }
-            else if (typeof(Sensor).IsAssignableFrom(objecttype))
+            else if (objecttype == HueObjectType.sensors)
             {
-                Sensor sensor = bresult as Sensor;
-                sensor.Id = id;
-                sensor.Image = GDIManager.CreateImageSourceFromImage(sensor.type == "ZGPSwitch" ? Properties.Resources.huetap : Properties.Resources.sensor);
-                Object = sensor;
+                
+                bresult.Id = id;
+                bresult.huetype = HueObjectType.sensors;
+                bresult.Image = GDIManager.CreateImageSourceFromImage(bresult.type == "ZGPSwitch" ? Properties.Resources.huetap : Properties.Resources.sensor);
+                
             }
-            else if (objecttype == typeof(Rule))
+            else if (objecttype == HueObjectType.sensors)
             {
-                log.Debug("Rule : " + Object);
-                Object.Id = id;
-                Object.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.rules);
+                log.Debug("Rule : " + bresult);
+                bresult.Id = id;
+                bresult.huetype = HueObjectType.sensors;
+                bresult.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.rules);
 
             }
-            else if (objecttype == typeof(Scene))
+            else if (objecttype == HueObjectType.scenes)
             {
-                log.Debug("Scene : " + Object);
-                Object.Id = id;
-                Object.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.SceneLarge);
+                log.Debug("Scene : " + bresult);
+                bresult.Id = id;
+                bresult.huetype = HueObjectType.scenes;
+                bresult.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.SceneLarge);
             }
-            else if (objecttype == typeof(Schedule))
+            else if (objecttype == HueObjectType.schedules)
             {
-                Schedule schedule = Object as Schedule;
-                schedule.Id = id;
+                
+                bresult.Id = id;
+                bresult.huetype = HueObjectType.schedules;
                 ImageSource imgsource;
-                if (schedule.localtime.Contains("PT"))
+                if (bresult.localtime.Contains("PT"))
                 {
                     log.Debug("Schedule is type Timer.");
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.timer_clock);
                 }
-                else if (schedule.localtime.Contains('W'))
+                else if (bresult.localtime.Contains('W'))
                 {
                     log.Debug("Schedule is type Alarm.");
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.stock_alarm);
                 }
-                else if (schedule.localtime.Contains('T'))
+                else if (bresult.localtime.Contains('T'))
                 {
                     log.Debug("Schedule is type Schedule.");
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.SchedulesLarge);
@@ -1134,16 +1135,17 @@ namespace WinHue3.Utils
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.schedules);
                 }
 
-                schedule.Image = imgsource;
-                Object = schedule;
+                bresult.Image = imgsource;
+                
             }
-            else if (objecttype == typeof(Resourcelink))
+            else if (objecttype == HueObjectType.resourcelinks)
             {
-                Object.Id = id;
-                Object.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.resource);                    
+                bresult.Id = id;
+                bresult.huetype = HueObjectType.resourcelinks;
+                bresult.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.resource);                    
             }
 
-            return Object;
+            return bresult;
         }
 
 

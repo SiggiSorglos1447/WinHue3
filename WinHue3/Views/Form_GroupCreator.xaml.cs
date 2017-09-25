@@ -44,16 +44,16 @@ namespace WinHue3.Views
 
             if (selectedGroup == null)
             {
-                List<Light> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
+                List<dynamic> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
                 if (hr != null)
-                    gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<Light>(hr);
+                    gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<dynamic>(hr);
             }
             else
             {
-                List<Light> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
+                List<dynamic> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
                 if (hr != null)
                 {
-                    gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<Light>(hr);
+                    gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<dynamic>(hr);
 
                     Group hr2 = (Group)await HueObjectHelper.GetObjectAsyncTask(bridge, selectedGroup.Id, typeof(Group));
                     if (hr2 != null)

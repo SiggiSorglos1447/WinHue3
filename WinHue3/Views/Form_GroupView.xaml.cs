@@ -24,7 +24,7 @@ namespace WinHue3.Views
         public async Task Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            List<Light> comlgt = await HueObjectHelper.GetBridgeLightsAsyncTask(_bridge);
+            List<dynamic> comlgt = await HueObjectHelper.GetBridgeLightsAsyncTask(_bridge);
             _gvv = DataContext as GroupViewViewModel;
 
             if (comlgt != null)

@@ -29,7 +29,7 @@ namespace WinHue3.ViewModels
                 GroupCreator.Type = gr.type;
                 _id = gr.Id;
                 RaisePropertyChanged("CanChangeType");
-                ObservableCollection<Light> list = new ObservableCollection<Light>();
+                ObservableCollection<dynamic> list = new ObservableCollection<dynamic>();
                 foreach (string s in gr.lights)
                 {
                     if (GroupCreator.ListAvailableLights.Any(x => x.Id == s))
@@ -43,7 +43,7 @@ namespace WinHue3.ViewModels
             }
             get
             {
-                Group gr = new Group {name = GroupCreator.Name, type = GroupCreator.Type, lights = GroupCreator.Listlights.Select(x => x.Id).ToList()};
+                Group gr = new Group {name = GroupCreator.Name, type = GroupCreator.Type, /*lights = GroupCreator.Listlights.Select(x => x.Id).ToList()*/};
                 if (_id != string.Empty)
                     gr.Id = _id;
                 if (GroupCreator.Type == "Room")

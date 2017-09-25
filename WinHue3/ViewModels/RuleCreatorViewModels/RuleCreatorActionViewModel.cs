@@ -185,7 +185,7 @@ namespace WinHue3.ViewModels.RuleCreatorViewModels
         {
             ListActionHueObjects.Clear();
             ActionProperties = null;
-            switch (ObjectType)
+          /*  switch (ObjectType)
             {
                 case "lights":
                     ListActionHueObjects.AddRange(HueObjectHelper.GetBridgeLights(_bridge));
@@ -210,7 +210,7 @@ namespace WinHue3.ViewModels.RuleCreatorViewModels
                     break;
                 default:
                     break;
-            }
+            }*/
         }
 
         public void SetBridge(Bridge bridge)

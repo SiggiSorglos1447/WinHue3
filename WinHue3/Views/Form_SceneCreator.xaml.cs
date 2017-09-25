@@ -46,7 +46,7 @@ namespace WinHue3.Views
             _bridge = bridge;
             _currentsceneid = sceneid ?? string.Empty;
 
-            List<Light> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
+            List<dynamic> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(bridge);
             if (hr != null)
             {
                 _scvm.Initialize(hr, _bridge);

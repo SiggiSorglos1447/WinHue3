@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Newtonsoft.Json;
 using WinHue3.Philips_Hue.BridgeObject.BridgeMessages;
 using WinHue3.Philips_Hue.BridgeObject.BridgeObjects;
 using WinHue3.Philips_Hue.Communication;
@@ -93,12 +95,12 @@ namespace WinHue3.Philips_Hue.BridgeObject
         /// Get all objects from the bridge async.
         /// </summary>
         /// <returns>A DataStore of objects from the bridge.</returns>
-        public async Task<DataStore> GetBridgeDataStoreAsyncTask()
+        public async Task<dynamic> GetBridgeDataStoreAsyncTask()
         {
             CommResult comres = await Comm.SendRequestAsyncTask(new Uri(BridgeUrl), WebRequestType.GET);
             if (comres.Status == WebExceptionStatus.Success)
             {
-                DataStore listObjets = Serializer.DeserializeToObject<DataStore>(comres.Data);
+                dynamic listObjets = JsonConvert.DeserializeObject<ExpandoObject>(comres.Data,eoc);
                 if (listObjets != null) return listObjets;
                 LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(Comm.Lastjson));
             }

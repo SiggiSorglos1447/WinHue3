@@ -10,15 +10,15 @@ namespace WinHue3.Models
 
         
         private string _name;
-        private ObservableCollection<Light> _listlights;
-        private ObservableCollection<Light> _listAvailableLights;
+        private ObservableCollection<dynamic> _listlights;
+        private ObservableCollection<dynamic> _listAvailableLights;
         private string _type;
         private string _class;
 
         public GroupCreatorModel()
         {
-            _listlights = new ObservableCollection<Light>();
-            _listAvailableLights = new ObservableCollection<Light>();
+            _listlights = new ObservableCollection<dynamic>();
+            _listAvailableLights = new ObservableCollection<dynamic>();
             _type = "LightGroup";
             _class = "Other";
         }
@@ -30,13 +30,13 @@ namespace WinHue3.Models
         }
 
         [MinimumCount(1, ErrorMessageResourceName = "Group_Select_One_Light", ErrorMessageResourceType = typeof(GlobalStrings))]
-        public ObservableCollection<Light> Listlights
+        public ObservableCollection<dynamic> Listlights
         {
             get => _listlights;
             set => SetProperty(ref _listlights,value);
         }
 
-        public ObservableCollection<Light> ListAvailableLights
+        public ObservableCollection<dynamic> ListAvailableLights
         {
             get => _listAvailableLights;
             set => SetProperty(ref _listAvailableLights,value);

@@ -18,21 +18,21 @@ namespace WinHue3.ViewModels
 {
     public class SceneCreatorViewModel : ValidatableBindableBase
     {
-        private ObservableCollection<Light> _listAvailableLights;
-        private ObservableCollection<Light> _selectedLight;
+        private ObservableCollection<dynamic> _listAvailableLights;
+        private ObservableCollection<dynamic> _selectedLight;
         private BackgroundWorker _bgWorker = new BackgroundWorker { WorkerReportsProgress = false, WorkerSupportsCancellation = false };
         private Bridge _bridge;
         private SceneCreatorModel _sceneCreatorModel;
         private Light _selectedSceneLight;
-        private ObservableCollection<Light> _listSceneLights;
+        private ObservableCollection<dynamic> _listSceneLights;
         
         public SceneCreatorViewModel()
         {
             SceneCreatorModel = new SceneCreatorModel();
 
-            ListAvailableLights = new ObservableCollection<Light>();
-            SelectedAvailableLights = new ObservableCollection<Light>();
-            ListSceneLights = new ObservableCollection<Light>();
+            ListAvailableLights = new ObservableCollection<dynamic>();
+            SelectedAvailableLights = new ObservableCollection<dynamic>();
+            ListSceneLights = new ObservableCollection<dynamic>();
         }
 
         public SceneCreatorModel SceneCreatorModel
@@ -41,26 +41,26 @@ namespace WinHue3.ViewModels
             set => SetProperty(ref _sceneCreatorModel,value);
         }
 
-        public void Initialize(List<Light> listlights, Bridge bridge)
+        public void Initialize(List<dynamic> listlights, Bridge bridge)
         {
             _bridge = bridge;
-            ListAvailableLights = new ObservableCollection<Light>(listlights);
-            ListSceneLights = new ObservableCollection<Light>();
+            ListAvailableLights = new ObservableCollection<dynamic>(listlights);
+            ListSceneLights = new ObservableCollection<dynamic>();
         }
 
         public void Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            ListSceneLights = new ObservableCollection<Light>();
+            ListSceneLights = new ObservableCollection<dynamic>();
         }
 
-        public ObservableCollection<Light> ListSceneLights
+        public ObservableCollection<dynamic> ListSceneLights
         {
             get => _listSceneLights;
             set => SetProperty(ref _listSceneLights, value);
         }
 
-        public ObservableCollection<Light> ListAvailableLights
+        public ObservableCollection<dynamic> ListAvailableLights
         {
             get => _listAvailableLights;
             set
@@ -74,7 +74,7 @@ namespace WinHue3.ViewModels
             }
         }
 
-        public ObservableCollection<Light> SelectedAvailableLights
+        public ObservableCollection<dynamic> SelectedAvailableLights
         {
             get => _selectedLight;
             set => SetProperty(ref _selectedLight, value);
@@ -106,7 +106,7 @@ namespace WinHue3.ViewModels
                 Scene scene = new Scene
                 {
                     name = SceneCreatorModel.Name,
-                    lights = ListSceneLights.Select(x => x.Id).ToList(),
+                   // lights = ListSceneLights.Select(x => x.Id).ToList(),
                     lightstates = new Dictionary<string, State>(),
                     recycle = SceneCreatorModel.Recycle
                 };
@@ -121,7 +121,7 @@ namespace WinHue3.ViewModels
             set
             {
                 SceneCreatorModel.Name = value.name;
-                ListSceneLights = new ObservableCollection<Light>(ListAvailableLights.Where(x => value.lights.Contains(x.Id)));
+                ListSceneLights = new ObservableCollection<dynamic>(ListAvailableLights.Where(x => value.lights.Contains(x.Id)));
                 foreach (Light h in ListSceneLights)
                 {
                     h.state = value.lightstates[h.Id];

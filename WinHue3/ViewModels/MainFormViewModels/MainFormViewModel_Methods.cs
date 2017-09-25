@@ -124,16 +124,16 @@ namespace WinHue3.ViewModels.MainFormViewModels
             Cursor_Tools.ShowWaitCursor();
             SelectedObject = null;
             log.Info($"Getting list of objects from bridge at {SelectedBridge.IpAddress}.");
-            List<IHueObject> hr = await HueObjectHelper.GetBridgeDataStoreAsyncTask(SelectedBridge);
+            List<dynamic> hr = await HueObjectHelper.GetBridgeDataStoreAsyncTask(SelectedBridge);
             if (hr != null)
             {
-                List<IHueObject> listobj = hr;
-                ObservableCollection<IHueObject> newlist = new ObservableCollection<IHueObject>();
+                List<dynamic> listobj = hr;
+                ObservableCollection<dynamic> newlist = new ObservableCollection<dynamic>();
 
                 switch (MainFormModel.Sort)
                 {
                     case WinHueSortOrder.Default:
-                        ListBridgeObjects = new ObservableCollection<IHueObject>(hr);
+                        ListBridgeObjects = new ObservableCollection<dynamic>(hr);
                         break;
                     case WinHueSortOrder.Ascending:
                         newlist.AddRange(from item in listobj where item is Light orderby item.name select item);
@@ -1094,7 +1094,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             await CheckForNewBulb();
         }
 
-        private async Task FindLightSerial()
+        private void FindLightSerial()
         {
             Form_AddLightSerial fas = new Form_AddLightSerial(_selectedBridge) {Owner = Application.Current.MainWindow};
             if (fas.ShowDialog() == true)

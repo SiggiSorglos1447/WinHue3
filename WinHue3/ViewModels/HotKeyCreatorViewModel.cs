@@ -29,7 +29,7 @@ namespace WinHue3.ViewModels
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private ObservableCollection<IHueObject> _listHueObject;
+        private ObservableCollection<dynamic> _listHueObject;
         private IHueObject _selectedHueObject;
         private IBaseProperties _propertyObject;
         private ObservableCollection<HotKey> _listHotKeys;
@@ -105,7 +105,7 @@ namespace WinHue3.ViewModels
             HotKeyModel.RecordButtonColor = new SolidColorBrush { Color = System.Windows.Media.Color.FromRgb(255, 0, 0) };
         }
 
-        public ObservableCollection<IHueObject> ListHueObject
+        public ObservableCollection<dynamic> ListHueObject
         {
             get => _listHueObject;
             set => SetProperty(ref _listHueObject, value);
@@ -191,6 +191,7 @@ namespace WinHue3.ViewModels
 
         private async Task FetchHueObject()
         {
+           
             if (ObjectType == null || _bridge == null)
             {
                 ListHueObject = null;
@@ -200,27 +201,27 @@ namespace WinHue3.ViewModels
            
             if (ObjectType == typeof(Light))
             {
-                List<Light> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(_bridge);
+                List<dynamic> hr = await HueObjectHelper.GetBridgeLightsAsyncTask(_bridge);
                 if (hr != null)
                 {
-                    ListHueObject = new ObservableCollection<IHueObject>(hr);
+                    ListHueObject = new ObservableCollection<dynamic>(hr);
                 }   
 
             }
             else if (ObjectType == typeof(Group))
             {
-                List<Group> hr = await HueObjectHelper.GetBridgeGroupsAsyncTask(_bridge);
+                List<dynamic> hr = await HueObjectHelper.GetBridgeGroupsAsyncTask(_bridge);
                 if (hr != null)
                 {
-                    ListHueObject = new ObservableCollection<IHueObject>(hr);
+                    ListHueObject = new ObservableCollection<dynamic>(hr);
                 }
             }
             else if( ObjectType == typeof(Scene))
             {
-                List<Scene> hr = await HueObjectHelper.GetBridgeScenesAsyncTask(_bridge);
+                List<dynamic> hr = await HueObjectHelper.GetBridgeScenesAsyncTask(_bridge);
                 if (hr != null)
                 {
-                    ListHueObject = new ObservableCollection<IHueObject>(hr);
+                    ListHueObject = new ObservableCollection<dynamic>(hr);
                 }
             }
         }

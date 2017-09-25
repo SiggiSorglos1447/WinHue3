@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using WinHue3.ExtensionMethods;
+using WinHue3.Philips_Hue;
 using WinHue3.Philips_Hue.BridgeObject.BridgeObjects;
 using WinHue3.Philips_Hue.Communication;
 using WinHue3.Philips_Hue.HueObjects.LightObject;
@@ -58,7 +59,7 @@ namespace HueLib2Test
         [TestMethod]
         public void TestSensors()
         {
-
+            string test = HueObjectType.lights.ToString();
             string ssensor =
                 "{\n    \"state\": {\n        \"daylight\": true,\n        \"lastupdated\": \"2017-08-09T09:56:00\"\n    },\n    \"config\": {\n        \"on\": true,\n        \"configured\": true,\n        \"sunriseoffset\": 0,\n        \"sunsetoffset\": 0\n    },\n    \"name\": \"Daylight\",\n    \"type\": \"Daylight\",\n    \"modelid\": \"PHDL00\",\n    \"manufacturername\": \"Philips\",\n    \"swversion\": \"1.0\"\n}";
            // ISensor obj = JsonConvert.DeserializeObject<ISensor>(ssensor);

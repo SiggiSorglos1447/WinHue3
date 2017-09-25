@@ -33,7 +33,7 @@ namespace WinHue3.ViewModels
         private string _randomizetime;
         private bool _isedit;
         private bool _cansetsettings = true;
-        private ObservableCollection<IHueObject> _listTarget;
+        private ObservableCollection<dynamic> _listTarget;
         private Bridge _bridge;
         private IHueObject _selectedObject;
         private IBaseProperties _body;
@@ -50,7 +50,7 @@ namespace WinHue3.ViewModels
         {
             _bridge = bridge;
             ListTarget = new ObservableCollection<IHueObject>();
-            List<IHueObject> listObjects = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
+            List<dynamic> listObjects = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
             
             if (listObjects != null)
             {
@@ -141,7 +141,7 @@ namespace WinHue3.ViewModels
             set => SetProperty(ref _isedit, !value);
         }
 
-        public ObservableCollection<IHueObject> ListTarget
+        public ObservableCollection<dynamic> ListTarget
         {
             get => _listTarget;
             set => SetProperty(ref _listTarget, value);

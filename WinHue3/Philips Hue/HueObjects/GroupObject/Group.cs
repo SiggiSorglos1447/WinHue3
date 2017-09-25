@@ -9,6 +9,7 @@ using WinHue3.Philips_Hue.HueObjects.Common;
 using WinHue3.Utils;
 using WinHue3.ViewModels;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
+using System;
 
 namespace WinHue3.Philips_Hue.HueObjects.GroupObject
 {
@@ -139,6 +140,5 @@ namespace WinHue3.Philips_Hue.HueObjects.GroupObject
         {
             return MemberwiseClone();
         }
-
     }
 }

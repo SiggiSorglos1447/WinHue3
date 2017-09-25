@@ -14,14 +14,14 @@ namespace WinHue3.ViewModels
         private DataTable _dt;
         private string _filter;
         private bool _reverse;
-        private List<Light> _listlights;
+        private List<dynamic> _listlights;
 
         public BulbsViewViewModel()
         {
 
         }
 
-        public void Initialize(List<Light> lights)
+        public void Initialize(List<dynamic> lights)
         {
             Listlights = lights;
             BuildBulbsViewReverse();
@@ -50,7 +50,7 @@ namespace WinHue3.ViewModels
         {
 
 
-            List<Light> llights = Listlights;
+            List<dynamic> llights = Listlights;
             DataTable dt = new DataTable();
 
             dt.Columns.Add("Properties");
@@ -100,7 +100,7 @@ namespace WinHue3.ViewModels
         private void BuildBulbsViewReverse()
         {
 
-            List<Light> llights = Listlights;
+            List<dynamic> llights = Listlights;
             if (llights == null) return;
             DataTable dt = new DataTable();
             dt.Columns.Add("Lights");
@@ -161,7 +161,7 @@ namespace WinHue3.ViewModels
             }
         }
 
-        public List<Light> Listlights
+        public List<dynamic> Listlights
         {
             get => _listlights;
 
