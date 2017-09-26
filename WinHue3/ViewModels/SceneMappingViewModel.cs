@@ -81,7 +81,7 @@ namespace WinHue3.ViewModels
 
             if (!WinHueSettings.settings.ShowHiddenScenes)
                 lscenes = _listscenes.Where(
-                        x => x.Value.name.Contains("HIDDEN") == false)
+                        x => ((dynamic)x.Value).name.Contains("HIDDEN") == false)
                     .ToDictionary(p => p.Key, p => p.Value);
             else
                 lscenes = _listscenes;

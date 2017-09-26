@@ -76,14 +76,14 @@ namespace WinHue3.Philips_Hue.BridgeObject
         /// Get all objects from the bridge.
         /// </summary>
         /// <returns>A DataStore of objects from the bridge.</returns>
-        public DataStore GetBridgeDataStore()
+        public dynamic GetBridgeDataStore()
         {
             
 
             CommResult comres = Comm.SendRequest(new Uri(BridgeUrl), WebRequestType.GET);
             if (comres.Status == WebExceptionStatus.Success)
             {
-                DataStore listObjets = Serializer.DeserializeToObject<DataStore>(comres.Data);
+                dynamic listObjets = JsonConvert.DeserializeObject<ExpandoObject>(comres.Data,eoc);
                 if (listObjets != null) return listObjets;
                 LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(Comm.Lastjson));
             }

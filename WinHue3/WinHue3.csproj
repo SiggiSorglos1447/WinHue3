@@ -294,7 +294,6 @@
     <Compile Include="Philips Hue\HueObjects\NewSensorsObject\UnknownSensorState.cs" />
     <Compile Include="Philips Hue\HueObjects\SensorState.cs" />
     <Compile Include="Utils\AsyncRelayCommand.cs" />
-    <Compile Include="Utils\ListExpandableObjectConverter.cs" />
     <Compile Include="Philips Hue\HueObjects\LightObject\Light.cs" />
     <Compile Include="Philips Hue\HueObjects\LightObject\State.cs" />
     <Compile Include="Philips Hue\HueObjects\ResourceLinkObject\ResourceLink.cs" />
@@ -312,6 +311,7 @@
     <Compile Include="Philips Hue\HueObjects\ScheduleObject\ScheduleJsonConverter.cs" />
     <Compile Include="Settings\BridgeSaveSettings.cs" />
     <Compile Include="Settings\CustomSettings.cs" />
+    <Compile Include="Utils\ExpandoObjectDescriptor.cs" />
     <Compile Include="Utils\TriggerHelper.cs" />
     <Compile Include="Utils\UACHelper.cs" />
     <Compile Include="Utils\UpdateManager.cs" />

@@ -74,17 +74,16 @@ namespace WinHue3.Philips_Hue.BridgeObject
         /// <typeparam name="T">Type of object to deserialize to</typeparam>
         /// <param name="id">Id of the object to get</param>
         /// <returns>BridgeCommResult</returns>
-        public IHueObject GetObject(string id, Type objecttype) 
+        public dynamic GetObject(string id, HueObjectType objecttype) 
         {
 
-            string typename = objecttype.GetHueType();
-            if (typename == null) return null;
+            string typename = objecttype.ToString();
             string url = BridgeUrl + $"/{typename}/{id}";
             CommResult comres = Comm.SendRequest(new Uri(url), WebRequestType.GET);
 
             if (comres.Status == WebExceptionStatus.Success)
             {
-                IHueObject data = (IHueObject)Serializer.DeserializeToObject(comres.Data,objecttype);
+                dynamic data = (dynamic)JsonConvert.DeserializeObject<ExpandoObject>(comres.Data,eoc);
                 if (data != null) return data;
                 LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(comres.Data));
                 return null;
@@ -98,6 +97,7 @@ namespace WinHue3.Philips_Hue.BridgeObject
         /// </summary>
         /// <typeparam name="T">Type of object to deserialize to</typeparam>
         /// <param name="id">Id of the object to get</param>
+        /// <param name="type">Type of Hue Object</param>
         /// <returns>BridgeCommResult</returns>
         public async Task<dynamic> GetObjectAsyncTask(string id, HueObjectType type)
         {
@@ -117,30 +117,6 @@ namespace WinHue3.Philips_Hue.BridgeObject
             return null;
         }
 
-        /// <summary>
-        /// Get the specified object freom the bridge.
-        /// </summary>
-        /// <typeparam name="T">Type of object to deserialize to</typeparam>
-        /// <param name="id">Id of the object to get</param>
-        /// <returns>BridgeCommResult</returns>
-        public async Task<T> GetObjectAsyncTask<T>(string id, Type objecttype) where T : IHueObject
-        {
-
-            string typename = objecttype.GetHueType();
-            if (typename == null) return default(T);
-            string url = BridgeUrl + $"/{typename}/{id}";
-            CommResult comres = await Comm.SendRequestAsyncTask(new Uri(url), WebRequestType.GET);
-
-            if (comres.Status == WebExceptionStatus.Success)
-            {
-                T data = Serializer.DeserializeToObject<T>(comres.Data);
-                if (data != null) return data;
-                LastCommandMessages.AddMessage(Serializer.DeserializeToObject<List<IMessage>>(comres.Data));
-                return default(T);
-            }
-            ProcessCommandFailure(url, comres.Status);
-            return default(T);
-        }
 
         /// <summary>
         /// Get a list of specified objects from the bridge.

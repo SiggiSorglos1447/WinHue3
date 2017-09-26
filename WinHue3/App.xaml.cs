@@ -1,5 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Resources;
@@ -28,7 +30,7 @@ namespace WinHue3
 
         public App()
         {
-
+            TypeDescriptor.AddProvider(new ExpandoObjectTypeDescriptionProvider(), typeof(ExpandoObject));
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             Hierarchy hier = log4net.LogManager.GetRepository() as Hierarchy;
 

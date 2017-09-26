@@ -137,23 +137,23 @@ namespace WinHue3.ViewModels.MainFormViewModels
                         ListBridgeObjects = new ObservableCollection<dynamic>(hr);
                         break;
                     case WinHueSortOrder.Ascending:
-                        newlist.AddRange(from item in listobj where item is Light orderby item.name select item);
-                        newlist.AddRange(from item in listobj where item is Group orderby item.name select item);
-                        newlist.AddRange(from item in listobj where item is Schedule orderby item.name select item);
-                        newlist.AddRange(from item in listobj where item is Scene orderby item.name select item);
-                        newlist.AddRange(from item in listobj where item is Sensor orderby item.name select item);
-                        newlist.AddRange(from item in listobj where item is Rule orderby item.name select item);
-                        newlist.AddRange(from item in listobj where item is Resourcelink orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.lights orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.groups orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.schedules orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.scenes orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.sensors orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.rules orderby item.name select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.resourcelinks orderby item.name select item);
                         ListBridgeObjects = new ObservableCollection<dynamic>(newlist);
                         break;
                     case WinHueSortOrder.Descending:
-                        newlist.AddRange(from item in listobj where item is Light orderby item.name descending select item);
-                        newlist.AddRange(from item in listobj where item is Group orderby item.name descending select item);
-                        newlist.AddRange(from item in listobj where item is Schedule orderby item.name descending select item);
-                        newlist.AddRange(from item in listobj where item is Scene orderby item.name descending select item);
-                        newlist.AddRange(from item in listobj where item is Sensor orderby item.name descending select item);
-                        newlist.AddRange(from item in listobj where item is Rule orderby item.name descending select item);
-                        newlist.AddRange(from item in listobj where item is Resourcelink orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.lights orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.groups orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.schedules orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.scenes orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.sensors orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.rules orderby item.name descending select item);
+                        newlist.AddRange(from item in listobj where item.huetype == HueObjectType.resourcelinks orderby item.name descending select item);
                         ListBridgeObjects = new ObservableCollection<dynamic>(newlist);
                         break;
                     default:
@@ -178,7 +178,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private async Task DoubleClickObject()
         {
             log.Debug("Double click on : " + SelectedObject);
-            if ((SelectedObject is Light) || (SelectedObject is Group))
+            if ((SelectedObject.huetype == HueObjectType.lights) || (SelectedObject.huetype == HueObjectType.groups))
             {
                 ImageSource hr = await HueObjectHelper.ToggleObjectOnOffStateAsyncTask(SelectedBridge, SelectedObject, SliderTt);
                 if (hr != null)
@@ -187,15 +187,15 @@ namespace WinHue3.ViewModels.MainFormViewModels
                     SelectedObject.Image = newimg;
                     int index = _listBridgeObjects.FindIndex(x => x.Id == SelectedObject.Id && x.GetType() == SelectedObject.GetType());
                     if (index == -1) return;
-                    if (SelectedObject is Light)
+                    if (SelectedObject.huetype == HueObjectType.lights)
                     {
-                        ((Light)SelectedObject).state.on = !((Light)SelectedObject).state.on;
-                        ((Light)ListBridgeObjects[index]).state.on = !((Light)ListBridgeObjects[index]).state.on;
+                        SelectedObject.state.on = !SelectedObject.state.on;
+                        ListBridgeObjects[index].state.on = !ListBridgeObjects[index].state.on;
                     }
                     else
                     {
-                        ((Group)_selectedObject).action.on = !((Group)_selectedObject).action.on;
-                        ((Group)ListBridgeObjects[index]).action.on = !((Group)ListBridgeObjects[index]).action.on;
+                        _selectedObject.action.on = !_selectedObject.action.on;
+                        ListBridgeObjects[index].action.on = !ListBridgeObjects[index].action.on;
                     }
                     
                     ListBridgeObjects[index].Image = newimg;
@@ -688,28 +688,26 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private void SetMainFormModel()
         {
             
-            if (_selectedObject is Light)
+            if (_selectedObject.huetype == HueObjectType.lights)
             {
-                Light light = (Light) _selectedObject;
-                
-                MainFormModel.SliderBri = light.state.bri ?? 0;
-                MainFormModel.SliderHue = light.state.hue ?? 0;
-                MainFormModel.SliderSat = light.state.sat ?? 0;
-                MainFormModel.SliderCt = light.state.ct ?? 153;
-                MainFormModel.SliderX = light.state.xy?[0] ?? 0;
-                MainFormModel.SliderY = light.state.xy?[1] ?? 0;
+               
+                MainFormModel.SliderBri = Convert.ToByte(_selectedObject.state.bri ?? 0);
+                MainFormModel.SliderHue = Convert.ToUInt16(_selectedObject.state.hue ?? 0);
+                MainFormModel.SliderSat = Convert.ToByte(_selectedObject.state.sat ?? 0);
+                MainFormModel.SliderCt = Convert.ToUInt16(_selectedObject.state.ct ?? 153);
+                MainFormModel.SliderX = Convert.ToDecimal(_selectedObject.state.xy?[0] ?? 0);
+                MainFormModel.SliderY = Convert.ToDecimal(_selectedObject.state.xy?[1] ?? 0);
              
             }
-            else if (_selectedObject is Group)
+            else if (_selectedObject.huetype == HueObjectType.groups)
             {
-                Group light = (Group)_selectedObject;
                 
-                MainFormModel.SliderBri = light.action.bri ?? 0;
-                MainFormModel.SliderHue = light.action.hue ?? 0;
-                MainFormModel.SliderSat = light.action.sat ?? 0;
-                MainFormModel.SliderCt = light.action.ct ?? 153;
-                MainFormModel.SliderX = light.action.xy?[0] ?? 0;
-                MainFormModel.SliderY = light.action.xy?[1] ?? 0;
+                MainFormModel.SliderBri = Convert.ToByte(_selectedObject.action.bri ?? 0);
+                MainFormModel.SliderHue = Convert.ToUInt16(_selectedObject.action.hue ?? 0);
+                MainFormModel.SliderSat = Convert.ToByte(_selectedObject.action.sat ?? 0);
+                MainFormModel.SliderCt = Convert.ToUInt16(_selectedObject.action.ct ?? 153);
+                MainFormModel.SliderX = Convert.ToDecimal(_selectedObject.action.xy?[0] ?? 0);
+                MainFormModel.SliderY = Convert.ToDecimal(_selectedObject.action.xy?[1] ?? 0);
                
             }
             else
@@ -760,98 +758,116 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private async Task EditObject()
         {
             log.Debug("Editing object : " + _selectedObject);
+            switch (_selectedObject.huetype)
+            {
+                case HueObjectType.groups:
+                {
+                    Form_GroupCreator fgc = new Form_GroupCreator() { Owner = Application.Current.MainWindow };
+                    await fgc.Initialize(SelectedBridge, (Group)SelectedObject);
+                    if (fgc.ShowDialog() == true)
+                    {
+                        await RefreshObject(_selectedObject);
+                    }
 
-            if (_selectedObject is Group)
-            {
-                Form_GroupCreator fgc = new Form_GroupCreator() { Owner = Application.Current.MainWindow };
-                await fgc.Initialize(SelectedBridge, (Group)SelectedObject);
-                if (fgc.ShowDialog() == true)
-                {
-                    await RefreshObject(_selectedObject);
+                    break;
                 }
-            }
-            else if (_selectedObject is Schedule)
-            {
-                Form_ScheduleCreator fsc = new Form_ScheduleCreator() { Owner = Application.Current.MainWindow };
-                await fsc.Initialize(SelectedBridge, SelectedObject);
-                if (fsc.ShowDialog() == true)
+
+                case HueObjectType.schedules:
                 {
-                    await RefreshObject(_selectedObject);
+                    Form_ScheduleCreator fsc = new Form_ScheduleCreator() { Owner = Application.Current.MainWindow };
+                    await fsc.Initialize(SelectedBridge, SelectedObject);
+                    if (fsc.ShowDialog() == true)
+                    {
+                        await RefreshObject(_selectedObject);
+                    }
+
+                    break;
                 }
-            }
-            else if (_selectedObject is Sensor)
-            {
-                Sensor obj = (Sensor)_selectedObject;
-                switch (obj.modelid)
+
+                case HueObjectType.sensors:
                 {
-                    case "PHDL00":
-                        Sensor cr = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, obj.Id, HueObjectType.sensors);
-                        if (cr != null)
-                        { 
-                            cr.Id = obj.Id;
-                            Form_Daylight dl = new Form_Daylight(cr, SelectedBridge) { Owner = Application.Current.MainWindow };
-                            if (dl.ShowDialog() == true)
-                            {
-                                await RefreshObject(_selectedObject);
+                
+                    switch (_selectedObject.modelid)
+                    {
+                        case "PHDL00":
+                            dynamic cr = await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, _selectedObject.Id, HueObjectType.sensors);
+                            if (cr != null)
+                            { 
+                                cr.Id = _selectedObject.Id;
+                                Form_Daylight dl = new Form_Daylight(cr, SelectedBridge) { Owner = Application.Current.MainWindow };
+                                if (dl.ShowDialog() == true)
+                                {
+                                    await RefreshObject(_selectedObject);
+                                }
+
                             }
 
-                        }
-
-                        break;
-                    case "ZGPSWITCH":
-                        Form_HueTapConfig htc = new Form_HueTapConfig()
-                        {
-                            Owner = Application.Current.MainWindow
-                        };
-                        await htc.Initialize(obj.Id, SelectedBridge);
-                        if (htc.ShowDialog() == true)
-                        {
-                            await RefreshObject(_selectedObject);
-                        }
-                        break;
-                    default:
-                        Sensor crs = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge,obj.Id, HueObjectType.sensors);
-                        if (crs != null)
-                        {
-                            Form_SensorCreator fsc = new Form_SensorCreator(SelectedBridge, crs)
+                            break;
+                        case "ZGPSWITCH":
+                            Form_HueTapConfig htc = new Form_HueTapConfig()
                             {
                                 Owner = Application.Current.MainWindow
                             };
-                            if (fsc.ShowDialog() == true)
+                            await htc.Initialize(_selectedObject.Id, SelectedBridge);
+                            if (htc.ShowDialog() == true)
                             {
                                 await RefreshObject(_selectedObject);
                             }
+                            break;
+                        default:
+                            Sensor crs = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge,_selectedObject.Id, HueObjectType.sensors);
+                            if (crs != null)
+                            {
+                                Form_SensorCreator fsc = new Form_SensorCreator(SelectedBridge, crs)
+                                {
+                                    Owner = Application.Current.MainWindow
+                                };
+                                if (fsc.ShowDialog() == true)
+                                {
+                                    await RefreshObject(_selectedObject);
+                                }
 
-                        }
-                        break;
-                }
-            }
-            else if (_selectedObject is Rule)
-            {
-                Form_RuleCreator frc = new Form_RuleCreator(SelectedBridge, (Rule)_selectedObject) { Owner = Application.Current.MainWindow };
-                if (frc.ShowDialog() == true)
-                {
-                    await RefreshObject(_selectedObject);
-                }
-            }
-            else if (_selectedObject is Scene)
-            {
-                Form_SceneCreator fscc = new Form_SceneCreator() { Owner = Application.Current.MainWindow };
-                await fscc.Inititalize(SelectedBridge, _selectedObject.Id);
-                if (fscc.ShowDialog() == true)
-                {
-                    await RefreshObject(_selectedObject);
-                }
-            }
-            else if (_selectedObject is Resourcelink)
-            {
-                Form_ResourceLinksCreator frlc = new Form_ResourceLinksCreator() { Owner = Application.Current.MainWindow };
-                await frlc.Initialize(SelectedBridge, (Resourcelink) _selectedObject);
-                if (frlc.ShowDialog() == true)
-                {
-                    await RefreshObject(_selectedObject);
+                            }
+                            break;
+                    }
+
+                    break;
                 }
 
+                case HueObjectType.rules:
+                {
+                    Form_RuleCreator frc = new Form_RuleCreator(SelectedBridge, _selectedObject) { Owner = Application.Current.MainWindow };
+                    if (frc.ShowDialog() == true)
+                    {
+                        await RefreshObject(_selectedObject);
+                    }
+
+                    break;
+                }
+
+                case HueObjectType.scenes:
+                {
+                    Form_SceneCreator fscc = new Form_SceneCreator() { Owner = Application.Current.MainWindow };
+                    await fscc.Inititalize(SelectedBridge, _selectedObject.Id);
+                    if (fscc.ShowDialog() == true)
+                    {
+                        await RefreshObject(_selectedObject);
+                    }
+
+                    break;
+                }
+
+                case HueObjectType.resourcelinks:
+                {
+                    Form_ResourceLinksCreator frlc = new Form_ResourceLinksCreator() { Owner = Application.Current.MainWindow };
+                    await frlc.Initialize(SelectedBridge, _selectedObject);
+                    if (frlc.ShowDialog() == true)
+                    {
+                        await RefreshObject(_selectedObject);
+                    }
+
+                    break;
+                }
             }
         }
 
@@ -1075,7 +1091,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
         {
             if (SelectedObject != null)
             {
-                IHueObject hr = await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, SelectedObject.Id, SelectedObject.GetType());
+                dynamic hr = await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, SelectedObject.Id, SelectedObject.huetype);
                 if (hr == null) return;
                 _selectedObject = hr;
             }

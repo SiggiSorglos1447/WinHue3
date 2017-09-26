@@ -23,7 +23,8 @@ namespace WinHue3.Interface
         public override object GroupNameFromItem(object item, int level, CultureInfo culture)
         {
             if (item == null) return GUI.ListView_others;
-            string type = item.GetHueType();
+            dynamic t = item;
+            string type = t.huetype.ToString();
             return GUI.ResourceManager.GetString("ListView_" + type);
 
         }

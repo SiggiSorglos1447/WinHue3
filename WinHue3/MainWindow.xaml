@@ -259,10 +259,10 @@
                     <KeyBinding Key="Delete" Command="{Binding DeleteObjectCommand}"/>
                 </ListView.InputBindings>
                 <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="MouseDoubleClick">
+                    <i:EventTrigger EventName="PreviewMouseDoubleClick">
                         <i:InvokeCommandAction Command="{Binding DoubleClickObjectCommand}"/>
                     </i:EventTrigger>
-                    <i:EventTrigger EventName="MouseUp">
+                    <i:EventTrigger EventName="PreviewMouseUp">
                         <i:InvokeCommandAction Command="{Binding ClickObjectCommand}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>

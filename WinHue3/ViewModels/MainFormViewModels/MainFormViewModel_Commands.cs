@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using OpenHardwareMonitor.Hardware;
+using WinHue3.Philips_Hue;
 using WinHue3.Philips_Hue.HueObjects.GroupObject;
 using WinHue3.Philips_Hue.HueObjects.LightObject;
 using WinHue3.Philips_Hue.HueObjects.NewSensorsObject;
@@ -27,14 +28,14 @@ namespace WinHue3.ViewModels.MainFormViewModels
         {
             if (!IsObjectSelected()) return false;
             if (IsGroupZero()) return false;
-            if (SelectedObject is Scene && ((Scene) SelectedObject).version == 1) return false;
-            return !(SelectedObject is Light);
+            if (SelectedObject.huetype == HueObjectType.scenes && SelectedObject.version == 1) return false;
+            return SelectedObject.huetype != HueObjectType.lights;
         }
 
         private bool CanSchedule()
         {
             if (!IsObjectSelected()) return false;
-            return SelectedObject is Light || SelectedObject is Group || SelectedObject is Scene ;
+            return SelectedObject.huetype == HueObjectType.lights || SelectedObject.huetype == HueObjectType.groups || SelectedObject.huetype == HueObjectType.scenes ;
         }
 
         public bool SearchingLights => _findlighttimer.IsEnabled;
@@ -52,15 +53,14 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private bool CanHue()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedObject is Light)
-            {
-                Light light = ((Light)SelectedObject);
-                if (light.state.on == false) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canhue;
+            if (SelectedObject.huetype == HueObjectType.lights)
+            {               
+                if (SelectedObject.state.on == false) return false;
+                return SupportedDeviceType.DeviceType.ContainsKey(SelectedObject.type) && SupportedDeviceType.DeviceType[SelectedObject.type].Canhue;
             }
-            else if (SelectedObject is Group)
+            else if (SelectedObject.huetype == HueObjectType.groups)
             {
-                return ((Group)SelectedObject).action?.hue != null;
+                return SelectedObject.action.hue != null;
             }
             return false;
         }
@@ -68,13 +68,12 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private bool CanBri()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedObject is Light)
+            if (SelectedObject.huetype == HueObjectType.lights)
             {
-                Light light = ((Light)SelectedObject);
-                if (light.state.on == false) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canbri;
+                if (SelectedObject.state.on == false) return false;
+                return SupportedDeviceType.DeviceType.ContainsKey(SelectedObject.type) && SupportedDeviceType.DeviceType[SelectedObject.type].Canbri;
             }
-            else if (SelectedObject is Group)
+            else if (SelectedObject.huetype == HueObjectType.groups)
             {
                 return ((Group)SelectedObject).action?.bri != null;
             }
@@ -84,13 +83,12 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private bool CanCt()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedObject is Light)
+            if (SelectedObject.huetype == HueObjectType.lights)
             {
-                Light light = ((Light)SelectedObject);
-                if (light.state.on == false) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canct;
+                if (SelectedObject.state.on == false) return false;
+                return SupportedDeviceType.DeviceType.ContainsKey(SelectedObject.type) && SupportedDeviceType.DeviceType[SelectedObject.type].Canct;
             }
-            else if (SelectedObject is Group)
+            else if (SelectedObject.huetype == HueObjectType.groups)
             {
                 return ((Group)SelectedObject).action?.ct != null;
             }
@@ -100,13 +98,12 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private bool CanSat()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedObject is Light)
+            if (SelectedObject.huetype == HueObjectType.lights)
             {
-                Light light = ((Light)SelectedObject);
-                if (light.state.on == false) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Cansat;
+                if (SelectedObject.state.on == false) return false;
+                return SupportedDeviceType.DeviceType.ContainsKey(SelectedObject.type) && SupportedDeviceType.DeviceType[SelectedObject.type].Cansat;
             }
-            else if (SelectedObject is Group)
+            else if (SelectedObject.huetype == HueObjectType.groups)
             {
                 return ((Group)SelectedObject).action?.sat != null;
             }
@@ -116,53 +113,52 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private bool CanXy()
         {
             if (!IsObjectSelected()) return false;
-            if (SelectedObject is Light)
+            if (SelectedObject.huetype == HueObjectType.lights)
             {
-                Light light = ((Light)SelectedObject);
-                if (light.state.on == false) return false;
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canxy;
+                
+                if (SelectedObject.state.on == false) return false;
+                return SupportedDeviceType.DeviceType.ContainsKey(SelectedObject.type) && SupportedDeviceType.DeviceType[SelectedObject.type].Canxy;
             }
-            else if (SelectedObject is Group)
+            else if (SelectedObject.huetype == HueObjectType.groups)
             {
-                return ((Group)SelectedObject).action?.xy != null;
+                return SelectedObject.action?.xy != null;
             }
             return false;
         }
 
         private bool IsDoubleClickable()
         {
-            return SelectedObject is Light || SelectedObject is Group || SelectedObject is Scene;
+            return SelectedObject.huetype == HueObjectType.lights || SelectedObject.huetype == HueObjectType.groups || SelectedObject.huetype == HueObjectType.scenes;
         }
 
         private bool CanIdentify()
         {
-            if (SelectedObject is Group) return true;
-            if (SelectedObject is Light)
+            if (SelectedObject.huetype == HueObjectType.groups) return true;
+            if (SelectedObject.huetype == HueObjectType.lights)
             {
-                Light light = ((Light)SelectedObject);
-                return SupportedDeviceType.DeviceType.ContainsKey(light.type) && SupportedDeviceType.DeviceType[light.type].Canalert;
+                return SupportedDeviceType.DeviceType.ContainsKey(SelectedObject.type) && SupportedDeviceType.DeviceType[SelectedObject.type].Canalert;
             }
             return false;
         }
 
         public bool CanSetSensivity()
         {
-            if (!(SelectedObject is Sensor)) return false;
+            if (SelectedObject.huetype != HueObjectType.sensors) return false;
 
-            return ((Sensor) SelectedObject).type == "ZLLPresence";
+            return SelectedObject.type == "ZLLPresence";
         }
 
         private bool CanReplaceState()
         {
             if (!IsObjectSelected()) return false;
-            return SelectedObject is Scene;
+            return SelectedObject.huetype == HueObjectType.scenes;
         }
 
         private bool CanCloneSensor()
         {
-            if (SelectedObject is Sensor)
+            if (SelectedObject.huetype == HueObjectType.sensors)
             {
-                return ((Sensor) SelectedObject).type.Contains("CLIP");
+                return SelectedObject.type.Contains("CLIP");
             }
             return false;
         }
@@ -170,7 +166,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
         private bool CanClone()
         {
             if (!IsObjectSelected()) return false;
-            return SelectedObject is Scene | SelectedObject is Group | SelectedObject is Rule | CanCloneSensor() | SelectedObject is Resourcelink;
+            return SelectedObject.huetype == HueObjectType.scenes | SelectedObject.huetype == HueObjectType.groups | SelectedObject.huetype == HueObjectType.rules | CanCloneSensor() | SelectedObject.huetype == HueObjectType.resourcelinks;
         }
 
         private bool CanRename()
@@ -187,13 +183,13 @@ namespace WinHue3.ViewModels.MainFormViewModels
 
         private bool IsGroupZero()
         {
-            return SelectedObject is Group && SelectedObject.Id == "0";
+            return SelectedObject.huetype == HueObjectType.groups && SelectedObject.Id == "0";
         }
 
 
         private bool CanStrobe()
         {
-            return SelectedObject is Light || SelectedObject is Group;
+            return SelectedObject.huetype == HueObjectType.lights || SelectedObject.huetype == HueObjectType.groups;
         }
 
         //*************** MainMenu Commands ********************        

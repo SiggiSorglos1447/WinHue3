@@ -15,7 +15,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
     {
         private Form_EventLog _eventlogform;
         private ObservableCollection<Bridge> _listBridges;
-        private IHueObject _selectedObject;
+        private dynamic _selectedObject;
         private Bridge _selectedBridge;
         private ushort? _sliderTT;
         private bool _editName;
@@ -37,6 +37,14 @@ namespace WinHue3.ViewModels.MainFormViewModels
             set { SetProperty(ref _listBridgeObjects, value); RaisePropertyChanged("MultiBridgeCB");}
         }
 
+       /* public dynamic propertygrid
+        {
+            get
+            {
+                return SelectedObject == null ? null : new ExpandoTypeDescriptor(SelectedObject);
+            }
+        }*/
+
         public string Lastmessage
         {
             get => _lastmessage;
@@ -52,7 +60,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
         public dynamic SelectedObject
         {
             get => _selectedObject;
-            set => SetProperty(ref _selectedObject,value);
+            set { SetProperty(ref _selectedObject, value); RaisePropertyChanged("propertygrid"); }
         }
 
         public Views.Form_EventLog Eventlogform

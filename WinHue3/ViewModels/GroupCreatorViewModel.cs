@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Dynamic;
 using System.Linq;
 using System.Windows.Input;
 using WinHue3.Models;
@@ -20,11 +21,11 @@ namespace WinHue3.ViewModels
             _id = string.Empty;
         }
 
-        public Group Group
+        public dynamic Group
         {
             set
             {
-                Group gr = value;
+                dynamic gr = value;
                 GroupCreator.Name = gr.name;
                 GroupCreator.Type = gr.type;
                 _id = gr.Id;
@@ -43,7 +44,11 @@ namespace WinHue3.ViewModels
             }
             get
             {
-                Group gr = new Group {name = GroupCreator.Name, type = GroupCreator.Type, /*lights = GroupCreator.Listlights.Select(x => x.Id).ToList()*/};
+                dynamic gr = new ExpandoObject();
+                gr.name = GroupCreator.Name;
+                gr.type = GroupCreator.Type;
+                /*lights = GroupCreator.Listlights.Select(x => x.Id).ToList()*/
+            
                 if (_id != string.Empty)
                     gr.Id = _id;
                 if (GroupCreator.Type == "Room")

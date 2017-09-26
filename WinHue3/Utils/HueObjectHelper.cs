@@ -100,40 +100,21 @@ namespace WinHue3.Utils
             return ProcessSearchResult(bridge, bresult, true);
         }
 
-        /// <summary>
-        /// Process the list of lights
-        /// </summary>
-        /// <param name="listlights">List of lights to process.</param>
-        /// <returns>A list of processed lights.</returns>
-        private static List<Light> ProcessLights(Dictionary<string, Light> listlights)
-        {
-            List<Light> newlist = new List<Light>();
-
-            foreach (KeyValuePair<string, Light> kvp in listlights)
-            {
-                kvp.Value.Id = kvp.Key;
-
-                kvp.Value.Image = GetImageForLight(kvp.Value.state.reachable.GetValueOrDefault() ? kvp.Value.state.on.GetValueOrDefault() ? LightImageState.On : LightImageState.Off : LightImageState.Unr, kvp.Value.modelid);
-
-                newlist.Add(kvp.Value);
-            }
-
-            return newlist;
-        }
 
         /// <summary>
         /// Process the list of lights
         /// </summary>
         /// <param name="listlights">List of lights to process.</param>
         /// <returns>A list of processed lights.</returns>
-        private static List<dynamic> ProcessLights(Dictionary<string, ExpandoObject> listlights)
+        private static List<dynamic> ProcessLights(dynamic listlights)
         {
             List<dynamic> newlist = new List<dynamic>();
-
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listlights)
+            IDictionary<string, object> lights = listlights as IDictionary<string, Object> ?? listlights;
+            foreach (KeyValuePair<string, object> kvp in lights)
             {
                 dynamic curr = kvp.Value;
                 curr.Id = kvp.Key;
+                curr.huetype = HueObjectType.lights;
                 curr.Image = GetImageForLight(curr.state.reachable ? curr.state.on ? LightImageState.On : LightImageState.Off : LightImageState.Unr, curr.modelid);
                 newlist.Add(curr);
             }
@@ -241,15 +222,17 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listgroups">List of group t</param>
         /// <returns>A list of processed group with image and id.</returns>
-        private static List<dynamic> ProcessGroups(Dictionary<string, ExpandoObject> listgroups)
+        private static List<dynamic> ProcessGroups(dynamic listgroups)
         {
             List<dynamic> newlist = new List<dynamic>();
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listgroups)
+            IDictionary<string, object> groups = listgroups as IDictionary<string, object>;
+            foreach (KeyValuePair<string, object> kvp in groups)
             {
                 log.Debug("Processing group : " + kvp.Value);
                 dynamic curr = kvp.Value;
+                curr.huetype = HueObjectType.groups;
                 curr.Id = kvp.Key;
-                curr.Image = GDIManager.CreateImageSourceFromImage(curr.state.any_on.GetValueOrDefault() ? (curr.state.all_on.GetValueOrDefault() ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupSome_Large) : Properties.Resources.HueGroupOff_Large);
+                curr.Image = GDIManager.CreateImageSourceFromImage(curr.state.any_on ? (curr.state.all_on ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupSome_Large) : Properties.Resources.HueGroupOff_Large);
                 newlist.Add(kvp.Value);
             }
 
@@ -292,14 +275,15 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listscenes">List of scenes to process.</param>
         /// <returns>A list of processed scenes.</returns>
-        private static List<dynamic> ProcessScenes(Dictionary<string, ExpandoObject> listscenes)
+        private static List<dynamic> ProcessScenes(dynamic listscenes)
         {
             List<dynamic> newlist = new List<dynamic>();
-
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listscenes)
+            IDictionary<string, object> scenes = listscenes as IDictionary<string, object>;
+            foreach (KeyValuePair<string, object> kvp in scenes)
             {
                 dynamic curr = kvp.Value;
                 curr.Id = kvp.Key;
+                curr.huetype = HueObjectType.scenes;
                 log.Debug("Processing scene : " + kvp.Value);
                 curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.SceneLarge);
                 if (curr.name.Contains("HIDDEN") && !WinHueSettings.settings.ShowHiddenScenes) continue;
@@ -344,15 +328,16 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listschedules">List of schedules to process.</param>
         /// <returns>A list of processed schedules.</returns>
-        public static List<dynamic> ProcessSchedules(Dictionary<string, ExpandoObject> listschedules)
+        public static List<dynamic> ProcessSchedules(dynamic listschedules)
         {
             List<dynamic> newlist = new List<dynamic>();
-
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listschedules)
+            IDictionary<string, object> schedules = listschedules as IDictionary<string, object>;
+            foreach (KeyValuePair<string, object> kvp in schedules)
             {
                 log.Debug("Assigning id to schedule ");
                 dynamic curr = kvp.Value;
                 curr.Id = kvp.Key;
+                curr.huetype = HueObjectType.schedules;
                 ImageSource imgsource;
                 log.Debug("Processing schedule : " + kvp.Value);
                 string Time = string.Empty;
@@ -432,14 +417,15 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listrules">List of rules to process.</param>
         /// <returns>A processed list of rules.</returns>
-        private static List<dynamic> ProcessRules(Dictionary<string, ExpandoObject> listrules)
+        private static List<dynamic> ProcessRules(dynamic listrules)
         {
             List<dynamic> newlist = new List<dynamic>();
-
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listrules)
+            IDictionary<string, object> rules = listrules as IDictionary<string, object>;
+            foreach (KeyValuePair<string, object> kvp in rules)
             {
                 dynamic curr = kvp.Value;
                 curr.Id = kvp.Key;
+                curr.huetype = HueObjectType.rules;
                 log.Debug("Processing rule : " + kvp.Value);
                 curr.Image = GDIManager.CreateImageSourceFromImage(Properties.Resources.rules);
                 newlist.Add(curr);
@@ -511,11 +497,11 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="listsensors">List of sensors to process.</param>
         /// <returns>A list of processed sensors.</returns>
-        private static List<dynamic> ProcessSensors(Dictionary<string, ExpandoObject> listsensors)
+        private static List<dynamic> ProcessSensors(dynamic listsensors)
         {
             List<dynamic> newlist = new List<dynamic>();
-
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listsensors)
+            IDictionary<string, object> sensors = listsensors as IDictionary<string, object>;
+            foreach (KeyValuePair<string, object> kvp in sensors)
             {
                 dynamic curr = kvp.Value;
                 curr.huetype = HueObjectType.sensors;
@@ -583,11 +569,11 @@ namespace WinHue3.Utils
         public static List<dynamic> GetBridgeDataStore(Bridge bridge)
         {
             log.Info($@"Fetching DataStore from bridge : {bridge.IpAddress}");
-            DataStore bresult = bridge.GetBridgeDataStore();
+            dynamic bresult = bridge.GetBridgeDataStore();
             List<dynamic> hr = null;
             if (bresult == null) return hr;
-            DataStore ds = bresult;
-            Group zero = GetGroupZero(bridge);
+            dynamic ds = bresult;
+            dynamic zero = GetGroupZero(bridge);
             if (zero != null)
             {
                 ds.groups.Add("0",zero);
@@ -607,14 +593,16 @@ namespace WinHue3.Utils
         public static async Task<List<dynamic>> GetBridgeDataStoreAsyncTask(Bridge bridge)
         {
             log.Info($@"Fetching DataStore from bridge : {bridge.IpAddress}");
-            DataStore bresult = await bridge.GetBridgeDataStoreAsyncTask();
+            dynamic bresult = await bridge.GetBridgeDataStoreAsyncTask();
             List<dynamic> hr = null;
             if (bresult == null) return hr;
-            DataStore ds = bresult;
-            Group zero = await GetGroupZeroAsynTask(bridge);
+            dynamic ds = bresult;
+            dynamic zero = await GetGroupZeroAsynTask(bridge);
             if (zero != null)
             {
-                ds.groups.Add("0", zero);
+                IDictionary<string, object> dic = ds.groups as IDictionary<string,object>;
+                dic.Add("0",zero);
+                ds.groups = dic as dynamic;
             }
 
             hr = ProcessDataStore(ds);
@@ -628,9 +616,9 @@ namespace WinHue3.Utils
         /// </summary>
         /// <param name="bridge"></param>
         /// <returns></returns>
-        private static Group GetGroupZero(Bridge bridge)
+        private static dynamic GetGroupZero(Bridge bridge)
         {
-            return bridge.GetObject<Group>("0");
+            return bridge.GetObject("0", HueObjectType.groups);
         }
 
         /// <summary>
@@ -663,12 +651,12 @@ namespace WinHue3.Utils
             return newlist;
         }
 
-        private static List<dynamic> ProcessRessourceLinks(Dictionary<string, ExpandoObject> listrl)
+        private static List<dynamic> ProcessRessourceLinks(dynamic listrl)
         {
             if(listrl == null) return new List<dynamic>();
             List<dynamic> newlist = new List<dynamic>();
-
-            foreach (KeyValuePair<string, ExpandoObject> kvp in listrl)
+            IDictionary<string, object> rl = listrl as IDictionary<string, object>;
+            foreach (KeyValuePair<string, object> kvp in rl)
             {
                 dynamic curr = kvp.Value;
                 curr.huetype = HueObjectType.resourcelinks;
@@ -1071,8 +1059,8 @@ namespace WinHue3.Utils
                 bresult.huetype = HueObjectType.lights;
                 bresult.Image =
                     GetImageForLight(
-                        bresult.state.reachable.GetValueOrDefault()
-                            ? bresult.state.@on.GetValueOrDefault() ? LightImageState.On : LightImageState.Off
+                        bresult.state.reachable
+                            ? bresult.state.@on ? LightImageState.On : LightImageState.Off
                             : LightImageState.Unr, bresult.modelid);
                 
             }
@@ -1082,7 +1070,7 @@ namespace WinHue3.Utils
                 bresult.huetype = HueObjectType.groups;
                 log.Debug("Group : " + bresult);
                 bresult.Id = id;
-                bresult.Image = GDIManager.CreateImageSourceFromImage(bresult.action.@on.GetValueOrDefault() ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupOff_Large);
+                bresult.Image = GDIManager.CreateImageSourceFromImage(bresult.action.@on ? Properties.Resources.HueGroupOn_Large : Properties.Resources.HueGroupOff_Large);
                 
             }
             else if (objecttype == HueObjectType.sensors)
@@ -1119,12 +1107,12 @@ namespace WinHue3.Utils
                     log.Debug("Schedule is type Timer.");
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.timer_clock);
                 }
-                else if (bresult.localtime.Contains('W'))
+                else if (bresult.localtime.Contains("W"))
                 {
                     log.Debug("Schedule is type Alarm.");
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.stock_alarm);
                 }
-                else if (bresult.localtime.Contains('T'))
+                else if (bresult.localtime.Contains("T"))
                 {
                     log.Debug("Schedule is type Schedule.");
                     imgsource = GDIManager.CreateImageSourceFromImage(Properties.Resources.SchedulesLarge);
