@@ -35,6 +35,7 @@ using Action = WinHue3.Philips_Hue.HueObjects.GroupObject.Action;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
 using MessageBox = System.Windows.MessageBox;
+using WinHue3.Philips_Hue;
 
 namespace WinHue3.ViewModels.MainFormViewModels
 {
@@ -143,7 +144,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
                         newlist.AddRange(from item in listobj where item is Sensor orderby item.name select item);
                         newlist.AddRange(from item in listobj where item is Rule orderby item.name select item);
                         newlist.AddRange(from item in listobj where item is Resourcelink orderby item.name select item);
-                        ListBridgeObjects = new ObservableCollection<IHueObject>(newlist);
+                        ListBridgeObjects = new ObservableCollection<dynamic>(newlist);
                         break;
                     case WinHueSortOrder.Descending:
                         newlist.AddRange(from item in listobj where item is Light orderby item.name descending select item);
@@ -153,7 +154,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
                         newlist.AddRange(from item in listobj where item is Sensor orderby item.name descending select item);
                         newlist.AddRange(from item in listobj where item is Rule orderby item.name descending select item);
                         newlist.AddRange(from item in listobj where item is Resourcelink orderby item.name descending select item);
-                        ListBridgeObjects = new ObservableCollection<IHueObject>(newlist);
+                        ListBridgeObjects = new ObservableCollection<dynamic>(newlist);
                         break;
                     default:
                         goto case WinHueSortOrder.Default;
@@ -226,12 +227,12 @@ namespace WinHue3.ViewModels.MainFormViewModels
             SliderTt = WinHueSettings.settings.DefaultTT;
         }
 
-        private async Task RefreshObject(IHueObject obj, bool logging = false)
+        private async Task RefreshObject(dynamic obj, bool logging = false)
         {
             int index = ListBridgeObjects.FindIndex(x => x.Id == obj.Id && x.GetType() == obj.GetType());
             if (index == -1) return;
 
-            IHueObject hr = await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, obj.Id, obj.GetType());
+            dynamic hr = await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, obj.Id, obj.huetype);
 
             if (hr == null) return;
             IHueObject newobj = hr;
@@ -320,7 +321,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             log.Debug($@"Opening the scene creator window for bridge {SelectedBridge.IpAddress} ");
             if (fsc.ShowDialog() != true) return;
             log.Debug($@"Getting the newly created scene ID {fsc.GetCreatedOrModifiedID()} from bridge {SelectedBridge.IpAddress}");
-            Scene hr = (Scene) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, fsc.GetCreatedOrModifiedID(), typeof(Scene));
+            Scene hr = (Scene) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, fsc.GetCreatedOrModifiedID(), HueObjectType.scenes);
             if (hr != null)
             {
                 _listBridgeObjects.Add(hr);
@@ -338,7 +339,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             log.Debug($@"Opening the schedule creator window passing bridge {SelectedBridge.IpAddress} ");
             if (fscc.ShowDialog() != true) return;
             log.Debug($@"Getting the newly created schedule ID {fscc.GetCreatedOrModifiedID()} from bridge {SelectedBridge.IpAddress}");
-            Schedule hr = (Schedule) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, fscc.GetCreatedOrModifiedID(), typeof(Schedule));
+            Schedule hr = (Schedule) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, fscc.GetCreatedOrModifiedID(), HueObjectType.schedules);
             if (hr != null)
             {
                 _listBridgeObjects.Add(hr);
@@ -356,7 +357,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             Form_RuleCreator frc = new Form_RuleCreator(SelectedBridge) { Owner = Application.Current.MainWindow };
             if (frc.ShowDialog() != true) return;
             log.Debug($@"Getting the newly sensor schedule ID {frc.GetCreatedOrModifiedID()} from bridge {SelectedBridge.IpAddress}");
-            Rule rule = (Rule) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, frc.GetCreatedOrModifiedID(), typeof(Rule));
+            Rule rule = (Rule) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, frc.GetCreatedOrModifiedID(), HueObjectType.rules);
             if (rule != null)
             {
                 _listBridgeObjects.Add(rule);
@@ -784,7 +785,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
                 switch (obj.modelid)
                 {
                     case "PHDL00":
-                        Sensor cr = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, obj.Id, typeof(Sensor));
+                        Sensor cr = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge, obj.Id, HueObjectType.sensors);
                         if (cr != null)
                         { 
                             cr.Id = obj.Id;
@@ -809,7 +810,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
                         }
                         break;
                     default:
-                        Sensor crs = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge,obj.Id, typeof(Sensor));
+                        Sensor crs = (Sensor) await HueObjectHelper.GetObjectAsyncTask(SelectedBridge,obj.Id, HueObjectType.sensors);
                         if (crs != null)
                         {
                             Form_SensorCreator fsc = new Form_SensorCreator(SelectedBridge, crs)
@@ -897,7 +898,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             if (result)
             {
                 log.Info("Object cloned succesfully !");
-                IHueObject hr = await SelectedBridge.GetObjectAsyncTask(SelectedObject.Id, SelectedObject.GetType());
+                dynamic hr = await SelectedBridge.GetObjectAsyncTask(SelectedObject.Id, SelectedObject.huetype);
 
                 if (hr != null)
                 {

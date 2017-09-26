@@ -10,7 +10,7 @@ using WinHue3.Philips_Hue.HueObjects.GroupObject;
 using WinHue3.Philips_Hue.HueObjects.LightObject;
 using WinHue3.Utils;
 using WinHue3.ViewModels;
-
+using WinHue3.Philips_Hue;
 
 namespace WinHue3.Addons.CpuTempMon
 {
@@ -25,10 +25,10 @@ namespace WinHue3.Addons.CpuTempMon
         public bool _canTest;
         public string _cpuTemp;
         public ISensor _selectedSensor;
-        public IHueObject _selectedObject;
+        public dynamic _selectedObject;
         public byte _bri;
         public byte _sat;
-        public List<IHueObject> _listLightGroups;
+        public List<dynamic> _listLightGroups;
         public ObservableCollection<ISensor> _listCpuSensors;
 
         public CpuTempViewModel()
@@ -41,7 +41,7 @@ namespace WinHue3.Addons.CpuTempMon
             CpuTemp = "0.00ºC";
             Bri = 254;
             Sat = 254;
-            ListLightGroups = new List<IHueObject>();
+            ListLightGroups = new List<dynamic>();
             ListCpuSensors = new ObservableCollection<ISensor>();
         }
 
@@ -53,10 +53,10 @@ namespace WinHue3.Addons.CpuTempMon
             _temp.OnSensorUpdated += _temp_OnSensorUpdated;
             _temp.Start();
 
-            List<IHueObject> hr = HueObjectHelper.GetBridgeDataStore(_bridge);
+            List<dynamic> hr = HueObjectHelper.GetBridgeDataStore(_bridge);
 
             if (hr == null) return;
-            ListLightGroups.AddRange(hr.Where(x => x is Light));
+            ListLightGroups.AddRange(hr.Where(x => x.huetype == HueObjectType.lights));
             ListLightGroups.AddRange(hr.Where(x => x is Group));
 
             SelectedObject = Properties.Settings.Default.CPUTemp_ObjectID != "" ? ListLightGroups.Find(x => x.Id == Properties.Settings.Default.CPUTemp_ObjectID) : ListLightGroups[0];
@@ -105,7 +105,7 @@ namespace WinHue3.Addons.CpuTempMon
 
 
 
-            if (SelectedObject is Light)
+            if (SelectedObject.huetype == HueObjectType.lights)
             {
                 _bridge.SetState(new State() { hue = hueTemp, bri = Bri, sat = Sat, @on = true, transitiontime = 9 }, _selectedObject.Id);
             }
@@ -167,7 +167,7 @@ namespace WinHue3.Addons.CpuTempMon
             set => SetProperty(ref _selectedSensor, value);
         }
 
-        public IHueObject SelectedObject
+        public dynamic SelectedObject
         {
             get => _selectedObject;
             set => SetProperty(ref _selectedObject, value);
@@ -185,7 +185,7 @@ namespace WinHue3.Addons.CpuTempMon
             set => SetProperty(ref _sat,value);
         }
 
-        public List<IHueObject> ListLightGroups
+        public List<dynamic> ListLightGroups
         {
             get => _listLightGroups;
             set => SetProperty(ref _listLightGroups, value);

@@ -35,7 +35,7 @@ namespace WinHue3.ViewModels
         private bool _cansetsettings = true;
         private ObservableCollection<dynamic> _listTarget;
         private Bridge _bridge;
-        private IHueObject _selectedObject;
+        private dynamic _selectedObject;
         private IBaseProperties _body;
 
         public ScheduleCreatorViewModel()
@@ -46,10 +46,10 @@ namespace WinHue3.ViewModels
             _randomizetime = string.Empty;
         }
 
-        public async Task Initialize(Bridge bridge, IHueObject obj)
+        public async Task Initialize(Bridge bridge, dynamic obj)
         {
             _bridge = bridge;
-            ListTarget = new ObservableCollection<IHueObject>();
+            ListTarget = new ObservableCollection<dynamic>();
             List<dynamic> listObjects = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
             
             if (listObjects != null)

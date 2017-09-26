@@ -45,15 +45,15 @@ namespace WinHue3.Views
             rlcvm.LinkCreatorModel.ShowID = WinHueSettings.settings.ShowID;
             rlcvm.LinkCreatorModel.Wrap = WinHueSettings.settings.WrapText;
 
-            List<IHueObject> hr = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
+            List<dynamic> hr = await HueObjectHelper.GetBridgeDataStoreAsyncTask(_bridge);
             if (hr == null) return;
-            ObservableCollection<IHueObject> listbrobj = new ObservableCollection<IHueObject>();
-            List<IHueObject> listobj = hr;
+            ObservableCollection<dynamic> listbrobj = new ObservableCollection<dynamic>();
+            List<dynamic> listobj = hr;
 
             switch (WinHueSettings.settings.Sort)
             {
                 case WinHueSortOrder.Default:
-                    listbrobj = new ObservableCollection<IHueObject>(hr);
+                    listbrobj = new ObservableCollection<dynamic>(hr);
                     break;
                 case WinHueSortOrder.Ascending:
                     listbrobj.AddRange(from item in listobj where item is Light orderby item.name ascending select item);

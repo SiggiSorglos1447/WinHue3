@@ -49,7 +49,7 @@ namespace WinHue3.ViewModels.MainFormViewModels
             set { SetProperty(ref _listBridges,value); RaisePropertyChanged("MultiBridgeCB");}
         }
 
-        public IHueObject SelectedObject
+        public dynamic SelectedObject
         {
             get => _selectedObject;
             set => SetProperty(ref _selectedObject,value);

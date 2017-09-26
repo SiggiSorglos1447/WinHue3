@@ -18,16 +18,16 @@ namespace WinHue3.ViewModels
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private ResourceLinkCreatorModel _resourceLinkCreatorModel;
-        private ObservableCollection<IHueObject> _listIHueObjects;
-        private ObservableCollection<IHueObject> _selectedLinkObjects;
+        private ObservableCollection<dynamic> _listIHueObjects;
+        private ObservableCollection<dynamic> _selectedLinkObjects;
         private bool _isEditing;
         private string _id;
 
         public ResourceLinkCreatorViewModel()
         {
             _resourceLinkCreatorModel = new ResourceLinkCreatorModel();
-            _listIHueObjects = new ObservableCollection<IHueObject>();
-            _selectedLinkObjects = new ObservableCollection<IHueObject>();
+            _listIHueObjects = new ObservableCollection<dynamic>();
+            _selectedLinkObjects = new ObservableCollection<dynamic>();
             _id = null;
         }
 
@@ -55,7 +55,7 @@ namespace WinHue3.ViewModels
                 LinkCreatorModel.ClassId = rl.classid;
                 LinkCreatorModel.Description = rl.description;
                 LinkCreatorModel.Recycle = rl.recycle;
-                ObservableCollection<IHueObject> listsel = new ObservableCollection<IHueObject>();
+                ObservableCollection<dynamic> listsel = new ObservableCollection<dynamic>();
                 foreach (string s in rl.links)
                 {
                     List<string> parts = s.Split('/').ToList();
@@ -81,14 +81,14 @@ namespace WinHue3.ViewModels
             set => SetProperty(ref _resourceLinkCreatorModel,value);
         }
 
-        public ObservableCollection<IHueObject> ListHueObjects
+        public ObservableCollection<dynamic> ListHueObjects
         {
             get => _listIHueObjects;
             set => SetProperty(ref _listIHueObjects, value);
         }
 
         [MinimumCount(1, ErrorMessageResourceType = typeof(GlobalStrings), ErrorMessageResourceName = "ResourceLinks_SelectAtLeastOne")]
-        public ObservableCollection<IHueObject> SelectedLinkObjects
+        public ObservableCollection<dynamic> SelectedLinkObjects
         {
             get => _selectedLinkObjects;
             set => SetProperty(ref _selectedLinkObjects,value);

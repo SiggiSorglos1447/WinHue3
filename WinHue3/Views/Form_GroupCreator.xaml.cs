@@ -10,6 +10,7 @@ using WinHue3.Philips_Hue.HueObjects.LightObject;
 using WinHue3.Resources;
 using WinHue3.Utils;
 using WinHue3.ViewModels;
+using WinHue3.Philips_Hue;
 
 
 namespace WinHue3.Views
@@ -55,7 +56,7 @@ namespace WinHue3.Views
                 {
                     gcvm.GroupCreator.ListAvailableLights = new ObservableCollection<dynamic>(hr);
 
-                    Group hr2 = (Group)await HueObjectHelper.GetObjectAsyncTask(bridge, selectedGroup.Id, typeof(Group));
+                    Group hr2 = (Group)await HueObjectHelper.GetObjectAsyncTask(bridge, selectedGroup.Id, HueObjectType.groups);
                     if (hr2 != null)
                         gcvm.Group = hr2;
                 }

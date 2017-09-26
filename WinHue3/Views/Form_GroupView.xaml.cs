@@ -29,7 +29,7 @@ namespace WinHue3.Views
 
             if (comlgt != null)
             {
-                List<Group> comgrp = await HueObjectHelper.GetBridgeGroupsAsyncTask(_bridge);
+                List<dynamic> comgrp = await HueObjectHelper.GetBridgeGroupsAsyncTask(_bridge);
                 if (comgrp != null)
                 {
 

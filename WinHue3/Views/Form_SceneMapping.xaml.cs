@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Threading.Tasks;
 using System.Windows;
 using WinHue3.Philips_Hue.BridgeObject;
@@ -8,7 +9,7 @@ using WinHue3.Philips_Hue.HueObjects.LightObject;
 using WinHue3.Philips_Hue.HueObjects.SceneObject;
 using WinHue3.Utils;
 using WinHue3.ViewModels;
-
+using WinHue3.Philips_Hue;
 namespace WinHue3.Views
 {   
 
@@ -29,10 +30,10 @@ namespace WinHue3.Views
         public async Task Initialize(Bridge bridge)
         {
             _bridge = bridge;
-            Dictionary<string, Light> lresult = await _bridge.GetListObjectsAsyncTask<Light>();
+            Dictionary<string, ExpandoObject> lresult = await _bridge.GetListObjectsAsyncTask(HueObjectType.lights);
             if (lresult != null)
             {
-                Dictionary<string, Scene> sresult = await _bridge.GetListObjectsAsyncTask<Scene>();
+                Dictionary<string, ExpandoObject> sresult = await _bridge.GetListObjectsAsyncTask(HueObjectType.scenes);
                 if (sresult != null)
                 {
                     

@@ -31,7 +31,7 @@ namespace WinHue3.Views
             tcvm.Bridge = bridge;
             tcvm.HueTapModel.Id = sensorid;
 
-            List<Scene> hr = await HueObjectHelper.GetBridgeScenesAsyncTask(_bridge);
+            List<dynamic> hr = await HueObjectHelper.GetBridgeScenesAsyncTask(_bridge);
 
             if (hr != null)
             {
@@ -42,7 +42,7 @@ namespace WinHue3.Views
                 }
                 else
                 {
-                    List<Scene> temp = hr;
+                    List<dynamic> temp = hr;
                     temp = temp.Where(x => !x.name.StartsWith("HIDDEN")).ToList();
                     tcvm.HueTapModel.ListScenes = temp;
                 }
